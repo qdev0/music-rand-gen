@@ -23,7 +23,14 @@ This project features bouncing geometric shapes that generate musical notes when
   - Attack and decay
   - LFO rate and depth
   - Octave shifting and detune
-- MIDI recording capability
+- Recording capabilities:
+  - MIDI recording for musical notation and DAW import
+  - High-quality WAV audio recording
+  - Simultaneous MIDI and audio recording
+  - Built-in audio playback preview
+  - One-click download for both formats
+  - File management system with audio preview
+  - Automatic file naming with timestamps
 
 ### Visual
 - Three types of bouncing shapes (circle, square, triangle)
@@ -56,7 +63,11 @@ This project features bouncing geometric shapes that generate musical notes when
    - Visual effects (sparkles, trails) are created
    - The shape has a 15% chance to disappear (if above minimum shape count)
 3. The piano keyboard at the bottom shows which notes are being played
-4. The resulting melody can be recorded as a MIDI file for later use
+4. Record your creation:
+   - Click the record button to start recording
+   - Both MIDI and audio are recorded simultaneously
+   - Stop recording to save both files
+   - Access your recordings through the Files panel
 
 ## Future Development
 
@@ -79,4 +90,26 @@ Currently, the project focuses on single-note melodies with one type of synthesi
 
 ## Usage
 
-Simply open the HTML file in a modern web browser. No additional dependencies or installation required. Click the refresh button to start a new session, adjust parameters using the control panel, and use the record button to save your favorite sequences as MIDI files. 
+Simply open the HTML file in a modern web browser. No additional dependencies or installation required. Click the refresh button to start a new session, adjust parameters using the control panel, and use the record button to save your favorite sequences as MIDI files.
+
+### Recording Your Music
+
+1. Click the "Record" button (⏺) to start recording
+2. Create music by letting shapes bounce and interact
+3. Click "Stop" (⏹) to end recording
+4. Both MIDI and audio files will be saved automatically
+5. Access your recordings through the Files panel (📁):
+   - 🎹 MIDI files: Perfect for importing into DAWs or music software
+   - 🔊 WAV files: High-quality audio recordings of exactly what you hear
+   - Preview audio recordings directly in the browser
+   - Download files by clicking on their names
+
+### Browser Compatibility
+
+For the best experience, use a modern browser that supports the Web Audio API and MediaRecorder:
+- Chrome (recommended)
+- Firefox
+- Edge
+- Safari (limited audio recording support)
+
+Note: Audio recording requires browser support for MediaRecorder API. If audio recording is not supported in your browser, MIDI recording will still work. 

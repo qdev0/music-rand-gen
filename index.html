@@ -1198,28 +1198,76 @@
         let recordStartTime = 0;
         let recordedNotes = [];
 
+        // Add audio recording variables
+        let mediaRecorder = null;
+        let audioChunks = [];
+        let destinationStream = null;
+        let destinationNode = null;
+
         const fileSection = document.getElementById("fileSection");
         const fileLinksDiv = document.getElementById("fileLinks");
 
-        recordBtn.addEventListener("click", () => {
+        // Create the MediaStreamDestination when audio context is initialized
+        try {
+            destinationNode = audioCtx.createMediaStreamDestination();
+            // Connect the master gain to both the normal destination and the recording destination
+            masterGain.connect(destinationNode);
+        } catch (e) {
+            console.warn("MediaStreamDestination not supported:", e);
+        }
+
+        recordBtn.addEventListener("click", async () => {
             if (!isRecording) {
+                // Start recording
                 isRecording = true;
-                recordBtn.textContent = "Stop";
+                recordBtn.textContent = "⏹ Stop";
+                recordBtn.style.backgroundColor = "rgba(255, 0, 0, 0.5)";
                 recordedNotes = [];
                 recordStartTime = performance.now();
-                console.log("Recording started.");
+
+                // Start audio recording
+                try {
+                    if (!destinationNode) {
+                        throw new Error("Audio recording not supported in this browser");
+                    }
+                    mediaRecorder = new MediaRecorder(destinationNode.stream);
+                    audioChunks = [];
+
+                    mediaRecorder.ondataavailable = (event) => {
+                        audioChunks.push(event.data);
+                    };
+
+                    mediaRecorder.onstop = () => {
+                        const audioBlob = new Blob(audioChunks, { type: 'audio/wav' });
+                        const audioFilename = "recorded_audio_" + Date.now() + ".wav";
+                        addFileLink(audioFilename, audioBlob, "audio");
+                    };
+
+                    mediaRecorder.start();
+                    console.log("Recording started.");
+                } catch (err) {
+                    console.error("Error starting audio recording:", err);
+                    alert("Audio recording failed to start: " + err.message);
+                    // Continue with MIDI recording even if audio recording fails
+                }
             } else {
+                // Stop recording
                 isRecording = false;
-                recordBtn.textContent = "Record";
-                console.log("Recording stopped.");
+                recordBtn.textContent = "⏺ Record";
+                recordBtn.style.backgroundColor = "";
+
+                // Stop audio recording
+                if (mediaRecorder && mediaRecorder.state === "recording") {
+                    mediaRecorder.stop();
+                }
+
+                // Handle MIDI recording
                 if (recordedNotes.length > 0) {
                     let midiData = generateMidiFile(recordedNotes);
-                    let filename = "recorded_" + Date.now() + ".mid";
-                    downloadMidi(midiData, filename);
-                    addFileLink(filename, midiData);
-                } else {
-                    alert("No notes recorded.");
+                    let filename = "recorded_midi_" + Date.now() + ".mid";
+                    addFileLink(filename, new Blob([midiData], { type: "audio/midi" }), "midi");
                 }
+                console.log("Recording stopped.");
             }
         });
 
@@ -1242,14 +1290,31 @@
         closeFiles.addEventListener("click", hideFiles);
         overlay.addEventListener("click", hideFiles);
 
-        function addFileLink(filename, midiData) {
+        // Update the addFileLink function to handle both MIDI and audio files
+        function addFileLink(filename, blob, type) {
             let link = document.createElement("a");
-            link.textContent = filename;
+            link.textContent = `${filename} (${type.toUpperCase()})`;
             link.className = "file-link";
-            link.href = "#";
-            link.addEventListener("click", () => {
-                downloadMidi(midiData, filename);
-            });
+            link.href = URL.createObjectURL(blob);
+            link.download = filename;
+
+            // Add icon based on file type
+            const icon = type === "midi" ? "🎹" : "🔊";
+            link.innerHTML = `${icon} ${link.textContent}`;
+
+            // Add play button for audio files
+            if (type === "audio") {
+                const playBtn = document.createElement("button");
+                playBtn.innerHTML = "▶️";
+                playBtn.style.marginLeft = "10px";
+                playBtn.onclick = (e) => {
+                    e.preventDefault();
+                    const audio = new Audio(link.href);
+                    audio.play();
+                };
+                link.appendChild(playBtn);
+            }
+
             fileLinksDiv.appendChild(link);
             showFiles();
         }
@@ -1315,18 +1380,6 @@
             let header = [0x4D, 0x54, 0x68, 0x64, 0, 0, 0, 6, 0, 1, 0, 1, 0, 0x78];
             let fileData = [...header, ...trackData];
             return new Uint8Array(fileData);
-        }
-
-        function downloadMidi(midiData, filename) {
-            let blob = new Blob([midiData], { type: "audio/midi" });
-            let url = URL.createObjectURL(blob);
-            let a = document.createElement("a");
-            a.href = url;
-            a.download = filename;
-            document.body.appendChild(a);
-            a.click();
-            document.body.removeChild(a);
-            URL.revokeObjectURL(url);
         }
 
         // define randomHSL => fix reference
