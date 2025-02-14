@@ -195,14 +195,14 @@
             color: white;
             cursor: pointer;
             font-size: 14px;
-            padding: 10px 20px;
+            padding: 6px 12px;
             transition: all 0.3s ease;
             backdrop-filter: blur(5px);
             font-weight: 500;
             letter-spacing: 0.5px;
             display: flex;
             align-items: center;
-            gap: 8px;
+            gap: 4px;
         }
 
         button:hover {
@@ -1147,14 +1147,15 @@
 
         <!-- Buttons on the right side -->
         <div id="buttonGroup">
-            <button id="randomizeBtn" class="has-tooltip" data-tooltip="Randomize all sound and visual parameters">🎲
-                Randomize</button>
-            <button id="refreshBtn" class="has-tooltip" data-tooltip="Reset the scene and create new bouncing shapes">↻
-                Refresh</button>
-            <button id="recordBtn" class="has-tooltip" data-tooltip="Start/Stop recording the melody as a MIDI file">⏺
-                Record</button>
-            <button id="filesBtn" class="has-tooltip" data-tooltip="View and download your recorded MIDI files">📁
-                Files</button>
+            <button id="stopStartBtn" class="has-tooltip" data-tooltip="Stop/Start the animation">⏯️ Start</button>
+            <button id="randomizeBtn" class="has-tooltip"
+                data-tooltip="Randomize all sound and visual parameters">🎲</button>
+            <button id="refreshBtn" class="has-tooltip"
+                data-tooltip="Reset the scene and create new bouncing shapes">↻</button>
+            <button id="recordBtn" class="has-tooltip"
+                data-tooltip="Start/Stop recording the melody as a MIDI file">⏺</button>
+            <button id="filesBtn" class="has-tooltip"
+                data-tooltip="View and download your recorded MIDI files">📁</button>
         </div>
     </div>
 
@@ -2852,13 +2853,23 @@
             e.target.nextElementSibling.textContent = e.target.value;
         });
 
-        // Modify animate function to use animation speed
+        // Animation control variables and state
         let lastTime = 0;
         let frameCount = 0;
         let lastFpsUpdate = 0;
         const fpsCounter = document.getElementById('fpsCounter');
+        let isAnimating = true;
+        let animationFrameId = null;
 
         function animate(currentTime) {
+            if (!isAnimating) {
+                if (animationFrameId) {
+                    cancelAnimationFrame(animationFrameId);
+                    animationFrameId = null;
+                }
+                return;
+            }
+
             // Calculate time since last frame
             const timeSinceLastFrame = currentTime - lastTime;
 
@@ -2867,7 +2878,7 @@
 
             // If not enough time has passed, skip this frame
             if (timeSinceLastFrame < minFrameTime) {
-                requestAnimationFrame(animate);
+                animationFrameId = requestAnimationFrame(animate);
                 return;
             }
 
@@ -2940,7 +2951,7 @@
                 sp.draw(ctx);
             }
 
-            requestAnimationFrame(animate);
+            animationFrameId = requestAnimationFrame(animate);
         }
 
         initPianoWave();
@@ -3556,6 +3567,26 @@
             hideFiles();
             cleanupAudioPlayers();
         });
+
+        // Add stop/start functionality
+        const stopStartBtn = document.getElementById('stopStartBtn');
+        stopStartBtn.addEventListener('click', () => {
+            isAnimating = !isAnimating;
+            stopStartBtn.innerHTML = isAnimating ? '⏸️ Stop' : '⏯️ Start';
+            stopStartBtn.style.backgroundColor = isAnimating ? 'rgba(226, 74, 74, 0.3)' : 'rgba(74, 226, 74, 0.3)';
+
+            if (isAnimating) {
+                lastTime = performance.now();
+                animate(lastTime);
+            } else if (animationFrameId) {
+                cancelAnimationFrame(animationFrameId);
+                animationFrameId = null;
+            }
+        });
+
+        // Initialize animation
+        lastTime = performance.now();
+        animate(lastTime);
     </script>
 </body>
 
