@@ -1638,7 +1638,7 @@
             if (!isRecording) {
                 // Start recording
                 isRecording = true;
-                recordBtn.textContent = "⏹ Stop";
+                recordBtn.innerHTML = "⏹";
                 recordBtn.style.backgroundColor = "rgba(255, 0, 0, 0.5)";
                 recordedNotes = [];
                 recordStartTime = performance.now();
@@ -1680,7 +1680,7 @@
             } else {
                 // Stop recording
                 isRecording = false;
-                recordBtn.textContent = "⏺ Record";
+                recordBtn.innerHTML = "⏺";
                 recordBtn.style.backgroundColor = "";
 
                 // Stop audio recording
