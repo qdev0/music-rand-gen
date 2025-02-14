@@ -526,6 +526,7 @@
         /* Improved range input styling */
         input[type="range"] {
             -webkit-appearance: none;
+            appearance: none;
             height: 4px;
             background: rgba(255, 255, 255, 0.2);
             border-radius: 2px;
@@ -3622,8 +3623,7 @@
     </script>
 </body>
 
-</html>
-stopStartBtn.addEventListener('click', () => {
+</html>stopStartBtn.addEventListener('click', () => {
 isAnimating = !isAnimating;
 stopStartBtn.innerHTML = isAnimating ? '⏸️ Stop' : '⏯️ Start';
 stopStartBtn.style.backgroundColor = isAnimating ? 'rgba(226, 74, 74, 0.3)' : 'rgba(74, 226, 74, 0.3)';
