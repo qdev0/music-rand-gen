@@ -3623,23 +3623,7 @@
     </script>
 </body>
 
-</html>stopStartBtn.addEventListener('click', () => {
-isAnimating = !isAnimating;
-stopStartBtn.innerHTML = isAnimating ? '⏸️ Stop' : '⏯️ Start';
-stopStartBtn.style.backgroundColor = isAnimating ? 'rgba(226, 74, 74, 0.3)' : 'rgba(74, 226, 74, 0.3)';
-
-if (isAnimating) {
-lastTime = performance.now();
-animate(lastTime);
-} else if (animationFrameId) {
-cancelAnimationFrame(animationFrameId);
-animationFrameId = null;
-}
-});
-
-// Initialize animation
-lastTime = performance.now();
-animate(lastTime);
+</html>
 </script>
 </body>
 
