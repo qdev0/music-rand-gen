@@ -6,6 +6,9 @@ A creative web-based music generator that creates melodies through bouncing shap
 
 This project features bouncing geometric shapes that generate musical notes when they collide with the ground. The position of each collision determines the pitch of the note, creating emergent melodies through physics-based interactions.
 
+![Musical Bouncing Shapes Demo](reference.png)
+*Reference image showing the interactive music generator interface*
+
 ## Features
 
 ### Audio
