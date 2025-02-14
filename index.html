@@ -1187,12 +1187,16 @@
         </div>
         <div class="visual-config-content">
             <div class="visual-control">
-                <label for="bgColor">Background Color</label>
+                <label for="bgColor" class="has-tooltip"
+                    data-tooltip="Change the background color of the canvas and create a gradient effect">Background
+                    Color</label>
                 <input type="color" id="bgColor" value="#1a1a2e">
                 <span class="color-preview"></span>
             </div>
             <div class="visual-control">
-                <label for="shapeColor">Shape Color Mode</label>
+                <label for="shapeColor" class="has-tooltip"
+                    data-tooltip="Choose how colors are assigned to shapes: random colors, smooth gradient transitions, single color variations, or rainbow cycling">Shape
+                    Color Mode</label>
                 <select id="shapeColor">
                     <option value="random">Random Colors</option>
                     <option value="gradient">Gradient</option>
@@ -1201,104 +1205,132 @@
                 </select>
             </div>
             <div class="visual-control">
-                <label for="particleCount">Particle Count</label>
+                <label for="particleCount" class="has-tooltip"
+                    data-tooltip="Set the number of particles that appear on screen (1-100)">Particle Count</label>
                 <input type="range" id="particleCount" min="1" max="100" value="30">
                 <span class="value-display">30</span>
             </div>
             <div class="visual-control">
-                <label for="bounceIntensity">Bounce Intensity</label>
+                <label for="bounceIntensity" class="has-tooltip"
+                    data-tooltip="Adjust how high shapes bounce when hitting the ground (0.5-2.0)">Bounce
+                    Intensity</label>
                 <input type="range" id="bounceIntensity" min="0.5" max="2" value="1" step="0.1">
                 <span class="value-display">1</span>
             </div>
             <div class="visual-control">
-                <label for="trailEffect">Trail Effect</label>
+                <label for="trailEffect" class="has-tooltip"
+                    data-tooltip="Enable trailing effects behind moving shapes">Trail Effect</label>
                 <input type="checkbox" id="trailEffect">
             </div>
             <div class="visual-control">
-                <label for="trailLength">Trail Length</label>
+                <label for="trailLength" class="has-tooltip"
+                    data-tooltip="Set how long the trailing effect remains visible (0.01-0.5)">Trail Length</label>
                 <input type="range" id="trailLength" min="0.01" max="0.5" value="0.1" step="0.01">
                 <span class="value-display">0.1</span>
             </div>
             <div class="visual-control">
-                <label for="glowIntensity">Glow Intensity</label>
+                <label for="glowIntensity" class="has-tooltip"
+                    data-tooltip="Control the brightness of the glow effect around shapes (0-30)">Glow Intensity</label>
                 <input type="range" id="glowIntensity" min="0" max="30" value="15">
                 <span class="value-display">15</span>
             </div>
             <div class="visual-control">
-                <label for="rotationSpeed">Rotation Speed</label>
+                <label for="rotationSpeed" class="has-tooltip"
+                    data-tooltip="Set how fast shapes rotate while moving (0-3)">Rotation Speed</label>
                 <input type="range" id="rotationSpeed" min="0" max="3" value="1" step="0.1">
                 <span class="value-display">1</span>
             </div>
             <div class="visual-control">
-                <label for="pulseEffect">Pulse Effect</label>
+                <label for="pulseEffect" class="has-tooltip" data-tooltip="Enable pulsing animation for shapes">Pulse
+                    Effect</label>
                 <input type="checkbox" id="pulseEffect">
             </div>
             <div class="visual-control">
-                <label for="shapeMorph">Shape Morphing</label>
+                <label for="shapeMorph" class="has-tooltip"
+                    data-tooltip="Allow shapes to transform between different forms over time">Shape Morphing</label>
                 <input type="checkbox" id="shapeMorph">
             </div>
             <div class="visual-control">
-                <label for="rainbowMode">Rainbow Mode</label>
+                <label for="rainbowMode" class="has-tooltip"
+                    data-tooltip="Enable continuous color cycling for all shapes">Rainbow Mode</label>
                 <input type="checkbox" id="rainbowMode">
             </div>
             <div class="visual-control">
-                <label for="particleSize">Particle Size</label>
+                <label for="particleSize" class="has-tooltip"
+                    data-tooltip="Adjust the size multiplier for all shapes (0.5-2.0)">Particle Size</label>
                 <input type="range" id="particleSize" min="0.5" max="2" value="1" step="0.1">
                 <span class="value-display">1</span>
             </div>
             <div class="visual-control">
-                <label for="explosionEffect">Explosion Effect</label>
+                <label for="explosionEffect" class="has-tooltip"
+                    data-tooltip="Create sparkle effects when shapes bounce">Explosion Effect</label>
                 <input type="checkbox" id="explosionEffect">
             </div>
             <div class="visual-control">
-                <label for="gravitationalPull">Gravitational Pull</label>
+                <label for="gravitationalPull" class="has-tooltip"
+                    data-tooltip="Enable orbital motion around the center of the screen">Gravitational Pull</label>
                 <input type="checkbox" id="gravitationalPull">
             </div>
             <div class="visual-control">
-                <label for="colorCycleSpeed">Color Cycle Speed</label>
+                <label for="colorCycleSpeed" class="has-tooltip"
+                    data-tooltip="Control how fast colors change in rainbow mode (0-0.01)">Color Cycle Speed</label>
                 <input type="range" id="colorCycleSpeed" min="0" max="0.01" value="0.001" step="0.001">
                 <span class="value-display">0.001</span>
             </div>
             <div class="visual-control">
-                <label for="particleInteraction">Particle Interaction</label>
+                <label for="particleInteraction" class="has-tooltip"
+                    data-tooltip="Enable forces between particles that affect their movement">Particle
+                    Interaction</label>
                 <input type="checkbox" id="particleInteraction">
             </div>
             <div class="visual-control">
-                <label for="particleOpacity">Particle Opacity</label>
+                <label for="particleOpacity" class="has-tooltip"
+                    data-tooltip="Set the transparency level of shapes (0.1-1.0)">Particle Opacity</label>
                 <input type="range" id="particleOpacity" min="0.1" max="1" value="1" step="0.1">
                 <span class="value-display">1</span>
             </div>
             <div class="visual-control">
-                <label for="animationSpeed">Animation Speed</label>
+                <label for="animationSpeed" class="has-tooltip"
+                    data-tooltip="Set the speed of the animation (0.1-2.0)">Animation Speed</label>
                 <input type="range" id="animationSpeed" min="0.1" max="2" value="1" step="0.1">
                 <span class="value-display">1</span>
             </div>
             <div class="visual-control">
-                <label for="replicationChance">Shape Replication Chance</label>
+                <label for="replicationChance" class="has-tooltip"
+                    data-tooltip="Probability of a shape duplicating when bouncing (0-100%)">Shape Replication
+                    Chance</label>
                 <input type="range" id="replicationChance" min="0" max="100" value="5" step="1">
                 <span class="value-display">5%</span>
             </div>
             <div class="visual-control">
-                <label for="disappearChance">Shape Disappear Chance</label>
+                <label for="disappearChance" class="has-tooltip"
+                    data-tooltip="Probability of a shape vanishing when bouncing (0-100%)">Shape Disappear
+                    Chance</label>
                 <input type="range" id="disappearChance" min="0" max="100" value="5" step="1">
                 <span class="value-display">5%</span>
             </div>
             <div class="visual-control">
-                <label for="maxFps">Max FPS</label>
+                <label for="maxFps" class="has-tooltip"
+                    data-tooltip="Limit the maximum frames per second for smoother performance (12-360)">Max FPS</label>
                 <input type="range" id="maxFps" min="12" max="360" value="60" step="1">
                 <span class="value-display">60</span>
             </div>
             <div class="visual-control">
-                <label for="psychedelicEffects">Psychedelic Effects</label>
+                <label for="psychedelicEffects" class="has-tooltip"
+                    data-tooltip="Enable colorful visual effects when shapes replicate or disappear">Psychedelic
+                    Effects</label>
                 <input type="checkbox" id="psychedelicEffects">
             </div>
             <div class="visual-control">
-                <label for="psychedelicIntensity">Effect Intensity</label>
+                <label for="psychedelicIntensity" class="has-tooltip"
+                    data-tooltip="Control the strength of psychedelic effects (0-100)">Effect Intensity</label>
                 <input type="range" id="psychedelicIntensity" min="0" max="100" value="50">
                 <span class="value-display">50</span>
             </div>
             <div class="visual-control">
-                <label for="psychedelicDuration">Effect Duration (ms)</label>
+                <label for="psychedelicDuration" class="has-tooltip"
+                    data-tooltip="Set how long psychedelic effects last in milliseconds (100-2000)">Effect Duration
+                    (ms)</label>
                 <input type="range" id="psychedelicDuration" min="100" max="2000" value="500" step="100">
                 <span class="value-display">500</span>
             </div>
@@ -3588,6 +3620,27 @@
         lastTime = performance.now();
         animate(lastTime);
     </script>
+</body>
+
+</html>
+stopStartBtn.addEventListener('click', () => {
+isAnimating = !isAnimating;
+stopStartBtn.innerHTML = isAnimating ? '⏸️ Stop' : '⏯️ Start';
+stopStartBtn.style.backgroundColor = isAnimating ? 'rgba(226, 74, 74, 0.3)' : 'rgba(74, 226, 74, 0.3)';
+
+if (isAnimating) {
+lastTime = performance.now();
+animate(lastTime);
+} else if (animationFrameId) {
+cancelAnimationFrame(animationFrameId);
+animationFrameId = null;
+}
+});
+
+// Initialize animation
+lastTime = performance.now();
+animate(lastTime);
+</script>
 </body>
 
 </html>
