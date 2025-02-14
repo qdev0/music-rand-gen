@@ -11,105 +11,159 @@ This project features bouncing geometric shapes that generate musical notes when
 
 ## Features
 
-### Audio
-- Multiple synthesizer types including:
-  - Basic waveforms (sine, square, triangle, sawtooth)
-  - Bass sounds (TB-303, acid, sub bass, wobble)
-  - Lead instruments (super saw, pluck, FM synth, PWM)
-  - Classic instruments (piano, organ, bells, pad)
+### Audio Synthesis
+- Multiple synthesizer types:
+  - **Basic Waveforms**: Sine, Square, Triangle, Sawtooth
+  - **Bass Sounds**: TB-303, Acid Bass, Sub Bass, Wobble Bass
+  - **Lead Instruments**: Super Saw, Pluck Synth, FM Synth, PWM Synth
+  - **Classic Instruments**: Piano, Organ, Bells, Pad Synth
 - Real-time audio parameter controls:
-  - Volume and reverb
+  - Volume and Reverb mixing
   - Filter cutoff and resonance
-  - Attack and decay
+  - ADSR envelope controls
   - LFO rate and depth
   - Octave shifting and detune
-- Recording capabilities:
-  - MIDI recording for musical notation and DAW import
-  - High-quality WAV audio recording
-  - Simultaneous MIDI and audio recording
-  - Built-in audio playback preview
-  - One-click download for both formats
-  - File management system with audio preview
-  - Automatic file naming with timestamps
+  - Individual parameter randomization
 
-### Visual
-- Three types of bouncing shapes (circle, square, triangle)
-- Dynamic shape creation and destruction
-- Customizable visual effects:
-  - Trail effects
-  - Glow intensity
-  - Color modes (random, gradient, monochrome, rainbow)
+### Recording System
+- **Dual Format Recording**:
+  - MIDI recording for musical notation
+  - High-quality WAV audio recording
+  - Simultaneous MIDI and WAV capture
+- **Advanced File Management**:
+  - Organized file groups by recording session
+  - Automatic file naming with timestamps
+  - Built-in audio player with progress bar
+  - Play/Pause controls with seek functionality
+  - One-click file downloads
+  - Batch file management
+  - Relative timestamp display
+
+### Visual Elements
+- Three interactive shape types:
+  - Circles with smooth edges
+  - Squares with rotation
+  - Triangles with physics
+- Dynamic shape behavior:
+  - Automatic shape creation/destruction
+  - Minimum and maximum shape limits
+  - Physics-based interactions
+  - Collision detection
+- Visual effects:
+  - Customizable trail effects
+  - Adjustable glow intensity
+  - Multiple color modes (Random, Gradient, Monochrome, Rainbow)
   - Particle interactions
-  - Explosion effects
-- Adjustable physics parameters:
-  - Bounce intensity
-  - Rotation speed
-  - Particle size and count
-- Minimum and maximum shape limits
+  - Explosion effects on collision
+  - Shape replication and disappearance chances
 
 ### Interface
-- Responsive design with collapsible controls
-- Fullscreen mode
-- Visual configuration panel
-- MIDI file management system
-- Randomization feature for all parameters
+- Modern, responsive design
+- Collapsible control panels
+- Real-time parameter adjustment
+- Visual feedback for all controls
+- Fullscreen mode support
+- FPS counter and optimization
+- Tooltips for all controls
+- Settings import/export functionality
 
-## How It Works
+### Physics Parameters
+- Adjustable bounce intensity
+- Rotation speed control
+- Particle size and count
+- Gravitational effects
+- Collision response
+- Shape morphing
+- Interactive boundaries
 
-1. Shapes bounce around the screen following basic physics rules
-2. When a shape hits the bottom of the screen:
-   - It generates a musical note based on its X position
-   - The note is played through the selected synthesizer
-   - Visual effects (sparkles, trails) are created
-   - The shape has a 15% chance to disappear (if above minimum shape count)
-3. The piano keyboard at the bottom shows which notes are being played
-4. Record your creation:
-   - Click the record button to start recording
-   - Both MIDI and audio are recorded simultaneously
-   - Stop recording to save both files
-   - Access your recordings through the Files panel
+## How to Use
 
-## Future Development
+### Basic Controls
+1. **Start/Stop**: Click the Refresh button to reset the scene
+2. **Adjust Parameters**: Use the control panel to modify sound and visual settings
+3. **Record**: Click the Record button to start capturing both MIDI and audio
+4. **Manage Files**: Access recordings through the Files panel
+5. **Randomize**: Click the Randomize button to generate new parameter combinations
 
-Currently, the project focuses on single-note melodies with one type of synthesizer playing at a time. Future enhancements could include:
-- Polyphonic synthesis
-- Multiple simultaneous instruments
-- Rhythm patterns
-- Harmony generation
-- More complex physics interactions
-- Additional visual effects and shape types
-- MIDI import capability
-- Preset system for saving configurations
+### Recording Process
+1. Click the "Record" button to start recording
+2. Let shapes bounce to create your melody
+3. Click "Stop" to end recording
+4. Both MIDI and WAV files are automatically saved
+5. Access recordings in the File Manager:
+   - Files are grouped by recording session
+   - MIDI files can be imported into DAWs
+   - WAV files can be played directly
+   - Download or delete files as needed
 
-## Technologies Used
+### File Manager Features
+- **Organized Layout**: Files are grouped by recording session
+- **Playback Controls**: 
+  - Play/Pause toggle
+  - Seek bar for navigation
+  - Time display
+  - Volume control
+- **File Operations**:
+  - Download files
+  - Delete recordings
+  - Preview audio
+  - Group management
 
-- HTML5 Canvas for graphics
-- Web Audio API for sound synthesis
-- JavaScript for physics and interaction
-- CSS for styling and animations
+### Settings Management
+- Export current configuration
+- Import saved settings
+- Quick parameter randomization
+- Preset management
 
-## Usage
+## Technical Details
 
-Simply open the HTML file in a modern web browser. No additional dependencies or installation required. Click the refresh button to start a new session, adjust parameters using the control panel, and use the record button to save your favorite sequences as MIDI files.
+### Audio System
+- Web Audio API for synthesis
+- Real-time audio processing
+- High-quality audio recording
+- MIDI file generation
+- Multiple synthesis algorithms
 
-### Recording Your Music
+### Visual Engine
+- HTML5 Canvas rendering
+- Optimized animation loop
+- Efficient particle system
+- Dynamic shape management
+- FPS-based performance optimization
 
-1. Click the "Record" button (⏺) to start recording
-2. Create music by letting shapes bounce and interact
-3. Click "Stop" (⏹) to end recording
-4. Both MIDI and audio files will be saved automatically
-5. Access your recordings through the Files panel (📁):
-   - 🎹 MIDI files: Perfect for importing into DAWs or music software
-   - 🔊 WAV files: High-quality audio recordings of exactly what you hear
-   - Preview audio recordings directly in the browser
-   - Download files by clicking on their names
+### File Handling
+- Blob-based file management
+- WAV file conversion
+- MIDI file generation
+- Automatic cleanup
+- Resource management
 
-### Browser Compatibility
+## Browser Compatibility
 
-For the best experience, use a modern browser that supports the Web Audio API and MediaRecorder:
+For the best experience, use a modern browser with Web Audio API support:
 - Chrome (recommended)
 - Firefox
 - Edge
 - Safari (limited audio recording support)
 
-Note: Audio recording requires browser support for MediaRecorder API. If audio recording is not supported in your browser, MIDI recording will still work. 
+## Future Development
+
+Planned enhancements:
+- Polyphonic synthesis
+- Multiple simultaneous instruments
+- Rhythm pattern generation
+- Harmony system
+- Advanced physics interactions
+- Additional visual effects
+- MIDI import capability
+- More instrument presets
+- Advanced audio effects
+- Collaborative features
+
+## Technical Requirements
+
+- Modern web browser with Web Audio API support
+- JavaScript enabled
+- Recommended minimum resolution: 1024x768
+- Audio output device
+- Optional: MIDI-compatible software for MIDI file playback 
