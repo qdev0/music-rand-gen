@@ -28,6 +28,19 @@
             z-index: 1;
         }
 
+        #fpsCounter {
+            position: fixed;
+            top: 90px;
+            left: 10px;
+            background: rgba(0, 0, 0, 0.5);
+            color: #fff;
+            padding: 5px 10px;
+            border-radius: 4px;
+            font-size: 12px;
+            z-index: 2;
+            font-family: monospace;
+        }
+
         #topBar {
             position: fixed;
             top: 0;
@@ -63,21 +76,23 @@
 
         #fullscreenBtn {
             position: fixed;
-            top: 20px;
-            right: 20px;
+            left: 20px;
+            bottom: 20px;
             background: rgba(40, 44, 60, 0.8);
             color: white;
             border: none;
-            padding: 10px 20px;
+            width: 40px;
+            height: 40px;
             border-radius: 8px;
             cursor: pointer;
-            font-size: 14px;
+            font-size: 20px;
             z-index: 1000;
             backdrop-filter: blur(5px);
             transition: all 0.3s ease;
             display: flex;
             align-items: center;
-            gap: 8px;
+            justify-content: center;
+            padding: 0;
         }
 
         #fullscreenBtn:hover {
@@ -86,11 +101,37 @@
         }
 
         .fullscreen-mode #fullscreenBtn {
-            opacity: 0;
+            opacity: 0.5;
         }
 
         .fullscreen-mode #fullscreenBtn:hover {
             opacity: 1;
+        }
+
+        .maximize-icon,
+        .minimize-icon {
+            position: absolute;
+            transition: all 0.3s ease;
+        }
+
+        .fullscreen-mode .maximize-icon {
+            opacity: 0;
+            transform: scale(0);
+        }
+
+        .fullscreen-mode .minimize-icon {
+            opacity: 1;
+            transform: scale(1);
+        }
+
+        .minimize-icon {
+            opacity: 0;
+            transform: scale(0);
+        }
+
+        .maximize-icon {
+            opacity: 1;
+            transform: scale(1);
         }
 
         #controls {
@@ -557,10 +598,6 @@
             transform: translateY(-2px);
         }
 
-        #fullscreenBtn {
-            background: rgba(255, 255, 255, 0.1);
-        }
-
         #exitFullscreenBtn {
             position: fixed;
             top: 20px;
@@ -732,10 +769,15 @@
                 Record</button>
             <button id="filesBtn" class="has-tooltip" data-tooltip="View and download your recorded MIDI files">📁
                 Files</button>
-            <button id="fullscreenBtn" class="has-tooltip" data-tooltip="Toggle fullscreen mode">🔲 Enter
-                Fullscreen</button>
         </div>
     </div>
+
+    <div id="fpsCounter">FPS: 0</div>
+    <canvas id="myCanvas"></canvas>
+    <button id="fullscreenBtn">
+        <span class="maximize-icon">⛶</span>
+        <span class="minimize-icon">⮌</span>
+    </button>
 
     <div id="overlay"></div>
     <div id="fileSection">
@@ -830,10 +872,27 @@
             <input type="range" id="particleOpacity" min="0.1" max="1" value="1" step="0.1">
             <span class="value-display">1</span>
         </div>
+        <div class="visual-control">
+            <label for="animationSpeed">Animation Speed</label>
+            <input type="range" id="animationSpeed" min="0.1" max="2" value="1" step="0.1">
+            <span class="value-display">1</span>
+        </div>
+        <div class="visual-control">
+            <label for="replicationChance">Shape Replication Chance</label>
+            <input type="range" id="replicationChance" min="0" max="100" value="5" step="1">
+            <span class="value-display">5%</span>
+        </div>
+        <div class="visual-control">
+            <label for="disappearChance">Shape Disappear Chance</label>
+            <input type="range" id="disappearChance" min="0" max="100" value="5" step="1">
+            <span class="value-display">5%</span>
+        </div>
+        <div class="visual-control">
+            <label for="maxFps">Max FPS</label>
+            <input type="range" id="maxFps" min="12" max="360" value="60" step="1">
+            <span class="value-display">60</span>
+        </div>
     </div>
-
-    <canvas id="myCanvas"></canvas>
-    <button id="exitFullscreenBtn">✕ Exit Fullscreen</button>
 
     <script>
         // Visual configuration
@@ -856,12 +915,15 @@
             colorCycleSpeed: 0.001,
             particleInteraction: false,
             bounceSoundPitch: 1,
-            particleOpacity: 1
+            particleOpacity: 1,
+            animationSpeed: 1,
+            replicationChance: 5,
+            disappearChance: 5,
+            maxFps: 60
         };
 
         // Fullscreen handling
         const fullscreenBtn = document.getElementById('fullscreenBtn');
-        const exitFullscreenBtn = document.getElementById('exitFullscreenBtn');
         let isFullscreen = false;
 
         function toggleFullscreen() {
@@ -875,7 +937,6 @@
                 } else if (document.documentElement.msRequestFullscreen) {
                     document.documentElement.msRequestFullscreen();
                 }
-                document.body.classList.add('fullscreen-mode');
             } else {
                 if (document.exitFullscreen) {
                     document.exitFullscreen();
@@ -886,14 +947,10 @@
                 } else if (document.msExitFullscreen) {
                     document.msExitFullscreen();
                 }
-                document.body.classList.remove('fullscreen-mode');
             }
-            isFullscreen = !isFullscreen;
-            setupCanvas(); // Resize canvas to match new dimensions
         }
 
         fullscreenBtn.addEventListener('click', toggleFullscreen);
-        exitFullscreenBtn.addEventListener('click', toggleFullscreen);
 
         // Handle fullscreen change events
         document.addEventListener('fullscreenchange', handleFullscreenChange);
@@ -904,10 +961,7 @@
         function handleFullscreenChange() {
             isFullscreen = !!(document.fullscreenElement || document.webkitFullscreenElement ||
                 document.mozFullScreenElement || document.msFullscreenElement);
-
-            if (!isFullscreen) {
-                document.body.classList.remove('fullscreen-mode');
-            }
+            document.body.classList.toggle('fullscreen-mode', isFullscreen);
             setupCanvas();
         }
 
@@ -960,6 +1014,10 @@
 
         try {
             audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            // Add this line to auto-start audio context
+            if (audioCtx.state === 'suspended') {
+                audioCtx.resume();
+            }
             analyser = audioCtx.createAnalyser();
             masterGain = audioCtx.createGain();
             filterNode = audioCtx.createBiquadFilter();
@@ -1830,7 +1888,7 @@
         const maxMidi = 72;
         const totalNotes = maxMidi - minMidi + 1;
         let pianoKeys = [];
-        const pianoKeyHeight = 120; // Increased from 80 to 120
+        const pianoKeyHeight = 90; // Increased from 80 to 120
         let keyWidth = W / totalNotes;
 
         const noteNames = ["C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"];
@@ -2193,21 +2251,21 @@
                         }
                     }
 
-                    // Add 15% chance to disappear if above minimum shapes
-                    if (Math.random() < 0.15 && shapes.length > minShapes) {
+                    // Check for replication/disappearance based on configured chances
+                    if (Math.random() * 100 < visualConfig.disappearChance) {
                         const index = shapes.indexOf(this);
-                        if (index > -1) {
+                        if (index > -1 && shapes.length > minShapes) {
+                            // Remove current shape
                             shapes.splice(index, 1);
                             // Add extra sparkles for disappearance
                             for (let i = 0; i < 12; i++) {
                                 spawnSparkles(this.x, this.y);
                             }
-                            return;
                         }
-                    }
-
-                    if (this.groundBounces % 8 === 0 && Math.random() < 0.15 && shapes.length < maxShapes) {
-                        createShapeClone(this);
+                    } else if (Math.random() * 100 < visualConfig.replicationChance) {
+                        if (shapes.length < maxShapes) {
+                            createShapeClone(this);
+                        }
                     }
                 }
             }
@@ -2327,8 +2385,46 @@
             initPiano();
         }
 
-        function animate() {
-            requestAnimationFrame(animate);
+        // Update animation speed control
+        document.getElementById('animationSpeed').addEventListener('input', (e) => {
+            visualConfig.animationSpeed = parseFloat(e.target.value);
+            e.target.nextElementSibling.textContent = e.target.value;
+        });
+
+        // Modify animate function to use animation speed
+        let lastTime = 0;
+        let frameCount = 0;
+        let lastFpsUpdate = 0;
+        const fpsCounter = document.getElementById('fpsCounter');
+
+        function animate(currentTime) {
+            // Calculate time since last frame
+            const timeSinceLastFrame = currentTime - lastTime;
+
+            // Calculate minimum time between frames based on max FPS
+            const minFrameTime = 1000 / visualConfig.maxFps;
+
+            // If not enough time has passed, skip this frame
+            if (timeSinceLastFrame < minFrameTime) {
+                requestAnimationFrame(animate);
+                return;
+            }
+
+            // FPS calculation
+            frameCount++;
+            if (currentTime - lastFpsUpdate >= 1000) {
+                const fps = Math.round((frameCount * 1000) / (currentTime - lastFpsUpdate));
+                fpsCounter.textContent = `FPS: ${fps}`;
+                frameCount = 0;
+                lastFpsUpdate = currentTime;
+            }
+
+            // Update last frame time
+            lastTime = currentTime;
+
+            // Calculate delta time and apply speed control
+            const deltaTime = Math.min(timeSinceLastFrame, 50); // Cap at 50ms to prevent large jumps
+            const speedAdjustedDelta = deltaTime * visualConfig.animationSpeed;
 
             if (visualConfig.trailEffect) {
                 ctx.fillStyle = `rgba(${hexToRgb(visualConfig.bgColor).join(',')}, 0.1)`;
@@ -2337,10 +2433,9 @@
                 ctx.clearRect(0, 0, W, H);
             }
 
-            // Draw in order: piano (bottom), visualization, shapes, sparkles (top)
+            // Draw piano and visualization
             drawPiano(ctx);
 
-            // Draw sound visualization above piano
             if (analyser && audioData) {
                 analyser.getByteFrequencyData(audioData);
 
@@ -2364,23 +2459,27 @@
                 ctx.restore();
             }
 
-            // Update all objects with bounce intensity
+            // Update objects with speed adjustment
             for (let s of shapes) {
-                s.gravity = 0.3 * visualConfig.bounceIntensity;
-                s.update(W, H - pianoKeyHeight); // Adjust bounce area to account for piano
+                // Apply speed adjustment to physics
+                s.gravity = 0.3 * visualConfig.bounceIntensity * (speedAdjustedDelta / 16);
+                s.update(W, H - pianoKeyHeight);
             }
+
             for (let i = sparkles.length - 1; i >= 0; i--) {
                 sparkles[i].update();
                 if (sparkles[i].alpha <= 0) sparkles.splice(i, 1);
             }
 
-            // Draw shapes and sparkles on top
+            // Draw shapes and sparkles
             for (let s of shapes) {
                 s.draw(ctx);
             }
             for (let sp of sparkles) {
                 sp.draw(ctx);
             }
+
+            requestAnimationFrame(animate);
         }
 
         initPianoWave();
@@ -2530,6 +2629,21 @@
             e.target.nextElementSibling.textContent = e.target.value;
         });
 
+        document.getElementById('replicationChance').addEventListener('input', (e) => {
+            visualConfig.replicationChance = parseFloat(e.target.value);
+            e.target.nextElementSibling.textContent = e.target.value + '%';
+        });
+
+        document.getElementById('disappearChance').addEventListener('input', (e) => {
+            visualConfig.disappearChance = parseFloat(e.target.value);
+            e.target.nextElementSibling.textContent = e.target.value + '%';
+        });
+
+        document.getElementById('maxFps').addEventListener('input', (e) => {
+            visualConfig.maxFps = parseInt(e.target.value);
+            e.target.nextElementSibling.textContent = e.target.value;
+        });
+
         function adjustColor(color, amount) {
             const hex = color.replace('#', '');
             const num = parseInt(hex, 16);
@@ -2550,6 +2664,15 @@
 
         // Initialize color preview
         document.querySelector('#bgColor').nextElementSibling.style.background = visualConfig.bgColor;
+
+        // Add auto-start when page loads
+        window.addEventListener('load', () => {
+            if (audioCtx && audioCtx.state === 'suspended') {
+                audioCtx.resume();
+            }
+            startShapes();
+            animate(0);
+        });
     </script>
 </body>
 
