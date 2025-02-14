@@ -1,0 +1,2556 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <title>3 Shapes, Piano Keys, Note Highlights, Sound Icons, Refresh & MIDI Record</title>
+    <style>
+        body {
+            margin: 0;
+            overflow: hidden;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            color: #fff;
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        canvas {
+            display: block;
+            background: rgba(255, 255, 255, 0.03);
+            position: fixed;
+            left: 0;
+            right: 0;
+            top: 80px;
+            width: 100%;
+            height: calc(100vh - 80px);
+            z-index: 1;
+        }
+
+        #topBar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 80px;
+            background: rgba(28, 32, 48, 0.95);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            padding: 0 24px;
+            z-index: 999;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 4px 30px rgba(0, 0, 0, 0.3);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            transition: opacity 0.3s ease;
+        }
+
+        .fullscreen-mode #topBar {
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        .fullscreen-mode #topBar:hover {
+            opacity: 1;
+            pointer-events: all;
+        }
+
+        .fullscreen-mode #visualConfig {
+            display: none;
+        }
+
+        #fullscreenBtn {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: rgba(40, 44, 60, 0.8);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            z-index: 1000;
+            backdrop-filter: blur(5px);
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        #fullscreenBtn:hover {
+            background: rgba(50, 54, 70, 0.9);
+            transform: translateY(-2px);
+        }
+
+        .fullscreen-mode #fullscreenBtn {
+            opacity: 0;
+        }
+
+        .fullscreen-mode #fullscreenBtn:hover {
+            opacity: 1;
+        }
+
+        #controls {
+            display: flex;
+            gap: 16px;
+            align-items: center;
+            flex-wrap: nowrap;
+            overflow-x: auto;
+            padding: 0 12px;
+            scrollbar-width: none;
+            -ms-overflow-style: none;
+            max-width: calc(100vw - 300px);
+        }
+
+        #controls::-webkit-scrollbar {
+            display: none;
+        }
+
+        .control-section {
+            display: flex;
+            gap: 12px;
+            align-items: center;
+            padding: 8px 16px;
+            border-right: 1px solid rgba(255, 255, 255, 0.15);
+            min-width: fit-content;
+            background: rgba(40, 44, 60, 0.5);
+            border-radius: 12px;
+            transition: all 0.3s ease;
+        }
+
+        .control-section:hover {
+            background: rgba(50, 54, 70, 0.8);
+            transform: translateY(-2px);
+        }
+
+        #synthSelect {
+            padding: 8px 16px;
+            font-size: 14px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 8px;
+            background: rgba(40, 44, 60, 0.95);
+            color: #fff;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            min-width: 160px;
+            backdrop-filter: blur(5px);
+        }
+
+        #buttonGroup {
+            display: flex;
+            gap: 12px;
+            align-items: center;
+            padding: 0 12px;
+            min-width: fit-content;
+        }
+
+        button {
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 8px;
+            background: rgba(74, 144, 226, 0.3);
+            color: white;
+            cursor: pointer;
+            font-size: 14px;
+            padding: 10px 20px;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(5px);
+            font-weight: 500;
+            letter-spacing: 0.5px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        button:hover {
+            transform: translateY(-2px);
+            background: rgba(74, 144, 226, 0.5);
+            border-color: rgba(255, 255, 255, 0.3);
+            box-shadow: 0 4px 12px rgba(74, 144, 226, 0.3);
+        }
+
+        .control-group {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background: rgba(40, 44, 60, 0.95);
+            padding: 6px 12px;
+            border-radius: 8px;
+            backdrop-filter: blur(5px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            transition: all 0.3s ease;
+        }
+
+        .control-group:hover {
+            background: rgba(50, 54, 70, 0.95);
+            border-color: rgba(255, 255, 255, 0.3);
+            transform: translateY(-2px);
+        }
+
+        .control-group label {
+            font-size: 14px;
+            color: #fff;
+            white-space: nowrap;
+            opacity: 0.9;
+            font-weight: 500;
+        }
+
+        .control-group input[type="range"] {
+            width: 100px;
+            cursor: pointer;
+            accent-color: #4a90e2;
+        }
+
+        .control-group input[type="number"] {
+            width: 60px;
+            padding: 4px 8px;
+            border: none;
+            border-radius: 4px;
+            background: rgba(255, 255, 255, 0.1);
+            color: #fff;
+            font-size: 14px;
+        }
+
+        #recordBtn {
+            background: rgba(226, 74, 74, 0.3);
+        }
+
+        #recordBtn:hover {
+            background: rgba(226, 74, 74, 0.5);
+            box-shadow: 0 4px 12px rgba(226, 74, 74, 0.3);
+        }
+
+        /* Files popup section */
+        #fileSection {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(255, 255, 255, 0.95);
+            padding: 24px;
+            border-radius: 16px;
+            max-width: 400px;
+            width: 90%;
+            font-size: 14px;
+            display: none;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+            z-index: 1000;
+            backdrop-filter: blur(10px);
+        }
+
+        #fileSection h3 {
+            margin: 0 0 15px;
+            font-size: 18px;
+            color: #333;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        #closeFiles {
+            background: none;
+            border: none;
+            color: #666;
+            cursor: pointer;
+            padding: 4px;
+            font-size: 20px;
+            line-height: 1;
+            box-shadow: none;
+        }
+
+        #closeFiles:hover {
+            color: #333;
+            transform: none;
+        }
+
+        .file-link {
+            display: block;
+            color: #4a90e2;
+            text-decoration: none;
+            cursor: pointer;
+            margin-bottom: 10px;
+            padding: 10px;
+            border-radius: 8px;
+            background: #f5f5f5;
+            transition: all 0.2s ease;
+        }
+
+        .file-link:hover {
+            background: #e8e8e8;
+            transform: translateY(-2px);
+        }
+
+        /* Overlay for files popup */
+        #overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.5);
+            display: none;
+            z-index: 999;
+        }
+
+        .value-display {
+            font-size: 12px;
+            color: #fff;
+            opacity: 0.9;
+            min-width: 20px;
+            text-align: center;
+            font-weight: 500;
+            background: rgba(255, 255, 255, 0.1);
+            padding: 2px 6px;
+            border-radius: 4px;
+        }
+
+        optgroup {
+            font-weight: 600;
+            color: rgba(255, 255, 255, 0.7);
+            background: #282c3c;
+        }
+
+        /* Improved range input styling */
+        input[type="range"] {
+            -webkit-appearance: none;
+            height: 4px;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 2px;
+            outline: none;
+        }
+
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 16px;
+            height: 16px;
+            background: #4a90e2;
+            border-radius: 50%;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            border: 2px solid rgba(255, 255, 255, 0.8);
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+        }
+
+        input[type="range"]::-webkit-slider-thumb:hover {
+            transform: scale(1.1);
+            background: #5a9ff2;
+            box-shadow: 0 2px 8px rgba(74, 144, 226, 0.4);
+        }
+
+        input[type="range"]::-moz-range-thumb {
+            width: 16px;
+            height: 16px;
+            background: #4a90e2;
+            border: 2px solid rgba(255, 255, 255, 0.8);
+            border-radius: 50%;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+        }
+
+        input[type="range"]::-moz-range-thumb:hover {
+            transform: scale(1.1);
+            background: #5a9ff2;
+            box-shadow: 0 2px 8px rgba(74, 144, 226, 0.4);
+        }
+
+        /* Dark theme for number inputs */
+        input[type="number"] {
+            background: rgba(40, 44, 60, 0.95);
+            color: #fff;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 4px;
+            padding: 4px 8px;
+            font-size: 14px;
+            width: 60px;
+            transition: all 0.2s ease;
+        }
+
+        input[type="number"]:hover,
+        input[type="number"]:focus {
+            background: rgba(50, 54, 70, 0.95);
+            border-color: rgba(255, 255, 255, 0.3);
+            outline: none;
+        }
+
+        input[type="number"]::-webkit-inner-spin-button,
+        input[type="number"]::-webkit-outer-spin-button {
+            opacity: 0.7;
+        }
+
+        @media (max-width: 1200px) {
+            #controls {
+                max-width: calc(100vw - 200px);
+            }
+
+            .control-section {
+                padding: 6px 12px;
+            }
+
+            button {
+                padding: 8px 16px;
+            }
+        }
+
+        @media (max-width: 768px) {
+            #topBar {
+                height: auto;
+                flex-direction: column;
+                padding: 12px;
+                gap: 12px;
+            }
+
+            #controls {
+                max-width: 100%;
+                padding: 0;
+                margin-bottom: 12px;
+            }
+
+            canvas {
+                top: 140px;
+                height: calc(100vh - 260px);
+                /* Adjusted for mobile layout */
+            }
+
+            .control-section {
+                padding: 4px 8px;
+            }
+        }
+
+        /* Tooltip styles */
+        .tooltip {
+            position: absolute;
+            background: rgba(28, 32, 48, 0.95);
+            color: white;
+            padding: 8px 12px;
+            border-radius: 6px;
+            font-size: 13px;
+            max-width: 200px;
+            opacity: 0;
+            visibility: hidden;
+            transform: translateY(10px);
+            transition: opacity 0.3s ease, transform 0.3s ease;
+            z-index: 1000;
+            pointer-events: none;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+            text-align: left;
+            line-height: 1.4;
+            backdrop-filter: blur(5px);
+            -webkit-backdrop-filter: blur(5px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .tooltip::before {
+            content: '';
+            position: absolute;
+            top: -6px;
+            left: 50%;
+            transform: translateX(-50%);
+            border-width: 0 6px 6px 6px;
+            border-style: solid;
+            border-color: transparent transparent rgba(28, 32, 48, 0.95) transparent;
+        }
+
+        .tooltip.show {
+            opacity: 1;
+            visibility: visible;
+            transform: translateY(0);
+        }
+
+        .has-tooltip {
+            position: relative;
+        }
+
+        #randomizeBtn {
+            background: rgba(147, 51, 234, 0.3);
+        }
+
+        #randomizeBtn:hover {
+            background: rgba(147, 51, 234, 0.5);
+            box-shadow: 0 4px 12px rgba(147, 51, 234, 0.3);
+        }
+
+        #visualConfig {
+            position: fixed;
+            right: 24px;
+            top: 100px;
+            background: rgba(28, 32, 48, 0.95);
+            backdrop-filter: blur(10px);
+            padding: 16px;
+            border-radius: 12px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 4px 30px rgba(0, 0, 0, 0.3);
+            z-index: 998;
+        }
+
+        #visualConfig h3 {
+            margin: 0 0 16px 0;
+            font-size: 16px;
+            color: #fff;
+            opacity: 0.9;
+        }
+
+        .visual-control {
+            margin-bottom: 12px;
+        }
+
+        .visual-control label {
+            display: block;
+            margin-bottom: 4px;
+            font-size: 14px;
+            color: #fff;
+            opacity: 0.8;
+        }
+
+        .color-preview {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border-radius: 4px;
+            margin-left: 8px;
+            vertical-align: middle;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        #visualConfig {
+            max-height: calc(100vh - 100px);
+            overflow-y: auto;
+            scrollbar-width: thin;
+            scrollbar-color: rgba(255, 255, 255, 0.3) transparent;
+        }
+
+        #visualConfig::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        #visualConfig::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.3);
+            border-radius: 3px;
+        }
+
+        .visual-control {
+            margin-bottom: 16px;
+            background: rgba(255, 255, 255, 0.05);
+            padding: 10px;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+        }
+
+        .visual-control:hover {
+            background: rgba(255, 255, 255, 0.1);
+            transform: translateX(5px);
+        }
+
+        .visual-control label {
+            display: block;
+            margin-bottom: 8px;
+            font-size: 14px;
+            color: #fff;
+            opacity: 0.9;
+            font-weight: 500;
+        }
+
+        #buttonGroup button:hover {
+            background: rgba(255, 255, 255, 0.15);
+            transform: translateY(-2px);
+        }
+
+        #fullscreenBtn {
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        #exitFullscreenBtn {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: rgba(40, 44, 60, 0.8);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            z-index: 1000;
+            backdrop-filter: blur(5px);
+            transition: all 0.3s ease;
+            display: none;
+        }
+
+        #exitFullscreenBtn:hover {
+            background: rgba(50, 54, 70, 0.9);
+            transform: translateY(-2px);
+        }
+
+        .fullscreen-mode #exitFullscreenBtn {
+            display: block;
+            opacity: 0;
+        }
+
+        .fullscreen-mode #exitFullscreenBtn:hover {
+            opacity: 1;
+        }
+
+        /* Remove old fullscreen button styles */
+        .fullscreen-mode #fullscreenBtn {
+            display: none;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="topBar">
+        <!-- Controls on left side -->
+        <div id="controls">
+            <div class="control-section has-tooltip">
+                <select id="synthSelect"
+                    data-tooltip="Choose from various synthesizer types including basic waveforms, bass sounds, lead instruments, and classic synth emulations">
+                    <optgroup label="Basic Waves">
+                        <option value="sine">Sine Wave</option>
+                        <option value="square">Square Wave</option>
+                        <option value="triangle">Triangle Wave</option>
+                        <option value="sawtooth">Sawtooth Wave</option>
+                    </optgroup>
+                    <optgroup label="Bass">
+                        <option value="tb303">TB-303 Bass</option>
+                        <option value="acid">Acid Bass</option>
+                        <option value="subbass">Sub Bass</option>
+                        <option value="wobble">Wobble Bass</option>
+                    </optgroup>
+                    <optgroup label="Leads">
+                        <option value="supersaw">Super Saw</option>
+                        <option value="pluck">Pluck Synth</option>
+                        <option value="fm">FM Synth</option>
+                        <option value="pwm">PWM Synth</option>
+                    </optgroup>
+                    <optgroup label="Instruments">
+                        <option value="piano">Piano</option>
+                        <option value="organ">Organ</option>
+                        <option value="bells">Bells</option>
+                        <option value="pad">Pad Synth</option>
+                    </optgroup>
+                </select>
+            </div>
+
+            <div class="control-section">
+                <div class="control-group has-tooltip">
+                    <label for="volumeSlider">Vol</label>
+                    <input type="range" id="volumeSlider" min="0" max="100" value="100"
+                        data-tooltip="Adjust the overall volume of the synthesizer">
+                    <span class="value-display">100</span>
+                </div>
+                <div class="control-group has-tooltip">
+                    <label for="reverbMix">Reverb</label>
+                    <input type="range" id="reverbMix" min="0" max="100" value="30"
+                        data-tooltip="Control the amount of reverb effect, adding space and depth to the sound">
+                    <span class="value-display">30</span>
+                </div>
+            </div>
+
+            <div class="control-section">
+                <div class="control-group has-tooltip">
+                    <label for="octaveShift">Octave</label>
+                    <input type="range" id="octaveShift" min="-2" max="2" value="0" step="1"
+                        data-tooltip="Shift the pitch up or down by octaves (-2 to +2 octaves)">
+                    <span class="value-display">0</span>
+                </div>
+                <div class="control-group has-tooltip">
+                    <label for="filterCutoff">Filter</label>
+                    <input type="range" id="filterCutoff" min="0" max="100" value="100"
+                        data-tooltip="Adjust the filter cutoff frequency, controlling the brightness of the sound">
+                    <span class="value-display">100</span>
+                </div>
+            </div>
+
+            <div class="control-section">
+                <div class="control-group has-tooltip">
+                    <label for="attack">Attack</label>
+                    <input type="range" id="attack" min="0" max="100" value="1"
+                        data-tooltip="Control how quickly the sound reaches full volume (0-100ms)">
+                    <span class="value-display">1</span>
+                </div>
+                <div class="control-group has-tooltip">
+                    <label for="decay">Decay</label>
+                    <input type="range" id="decay" min="100" max="2000" value="500"
+                        data-tooltip="Set how long the sound takes to fade out (100-2000ms)">
+                    <span class="value-display">500</span>
+                </div>
+            </div>
+
+            <div class="control-section">
+                <div class="control-group has-tooltip">
+                    <label for="resonance">Res</label>
+                    <input type="range" id="resonance" min="0" max="20" value="1"
+                        data-tooltip="Adjust filter resonance to emphasize frequencies around the cutoff point">
+                    <span class="value-display">1</span>
+                </div>
+                <div class="control-group has-tooltip">
+                    <label for="detune">Detune</label>
+                    <input type="range" id="detune" min="0" max="100" value="0"
+                        data-tooltip="Fine-tune the pitch slightly sharp or flat (0-100 cents)">
+                    <span class="value-display">0</span>
+                </div>
+            </div>
+
+            <div class="control-section">
+                <div class="control-group has-tooltip">
+                    <label for="lfoRate">LFO Rate</label>
+                    <input type="range" id="lfoRate" min="0" max="20" value="0"
+                        data-tooltip="Set the speed of the LFO modulation (0-20 Hz)">
+                    <span class="value-display">0</span>
+                </div>
+                <div class="control-group has-tooltip">
+                    <label for="lfoDepth">LFO Depth</label>
+                    <input type="range" id="lfoDepth" min="0" max="100" value="0"
+                        data-tooltip="Control how much the LFO affects the sound (0-100%)">
+                    <span class="value-display">0</span>
+                </div>
+            </div>
+
+            <div class="control-section">
+                <div class="control-group has-tooltip">
+                    <label for="maxShapes">Max</label>
+                    <input type="number" id="maxShapes" min="1" max="20" value="10"
+                        data-tooltip="Set the maximum number of bouncing shapes that can appear on screen">
+                </div>
+                <div class="control-group has-tooltip">
+                    <label for="minShapes">Min</label>
+                    <input type="number" id="minShapes" min="1" max="20" value="3"
+                        data-tooltip="Set the minimum number of bouncing shapes that must remain on screen">
+                </div>
+            </div>
+        </div>
+
+        <!-- Buttons on the right side -->
+        <div id="buttonGroup">
+            <button id="randomizeBtn" class="has-tooltip" data-tooltip="Randomize all sound and visual parameters">🎲
+                Randomize</button>
+            <button id="refreshBtn" class="has-tooltip" data-tooltip="Reset the scene and create new bouncing shapes">↻
+                Refresh</button>
+            <button id="recordBtn" class="has-tooltip" data-tooltip="Start/Stop recording the melody as a MIDI file">⏺
+                Record</button>
+            <button id="filesBtn" class="has-tooltip" data-tooltip="View and download your recorded MIDI files">📁
+                Files</button>
+            <button id="fullscreenBtn" class="has-tooltip" data-tooltip="Toggle fullscreen mode">🔲 Enter
+                Fullscreen</button>
+        </div>
+    </div>
+
+    <div id="overlay"></div>
+    <div id="fileSection">
+        <h3>
+            Recorded Files
+            <button id="closeFiles">&times;</button>
+        </h3>
+        <div id="fileLinks"></div>
+    </div>
+
+    <div id="visualConfig">
+        <h3>Visual Configuration</h3>
+        <div class="visual-control">
+            <label for="bgColor">Background Color</label>
+            <input type="color" id="bgColor" value="#1a1a2e">
+            <span class="color-preview"></span>
+        </div>
+        <div class="visual-control">
+            <label for="shapeColor">Shape Color Mode</label>
+            <select id="shapeColor">
+                <option value="random">Random Colors</option>
+                <option value="gradient">Gradient</option>
+                <option value="monochrome">Monochrome</option>
+                <option value="rainbow">Rainbow Cycle</option>
+            </select>
+        </div>
+        <div class="visual-control">
+            <label for="particleCount">Particle Count</label>
+            <input type="range" id="particleCount" min="1" max="100" value="30">
+            <span class="value-display">30</span>
+        </div>
+        <div class="visual-control">
+            <label for="bounceIntensity">Bounce Intensity</label>
+            <input type="range" id="bounceIntensity" min="0.5" max="2" value="1" step="0.1">
+            <span class="value-display">1</span>
+        </div>
+        <div class="visual-control">
+            <label for="trailEffect">Trail Effect</label>
+            <input type="checkbox" id="trailEffect">
+        </div>
+        <div class="visual-control">
+            <label for="trailLength">Trail Length</label>
+            <input type="range" id="trailLength" min="0.01" max="0.5" value="0.1" step="0.01">
+            <span class="value-display">0.1</span>
+        </div>
+        <div class="visual-control">
+            <label for="glowIntensity">Glow Intensity</label>
+            <input type="range" id="glowIntensity" min="0" max="30" value="15">
+            <span class="value-display">15</span>
+        </div>
+        <div class="visual-control">
+            <label for="rotationSpeed">Rotation Speed</label>
+            <input type="range" id="rotationSpeed" min="0" max="3" value="1" step="0.1">
+            <span class="value-display">1</span>
+        </div>
+        <div class="visual-control">
+            <label for="pulseEffect">Pulse Effect</label>
+            <input type="checkbox" id="pulseEffect">
+        </div>
+        <div class="visual-control">
+            <label for="shapeMorph">Shape Morphing</label>
+            <input type="checkbox" id="shapeMorph">
+        </div>
+        <div class="visual-control">
+            <label for="rainbowMode">Rainbow Mode</label>
+            <input type="checkbox" id="rainbowMode">
+        </div>
+        <div class="visual-control">
+            <label for="particleSize">Particle Size</label>
+            <input type="range" id="particleSize" min="0.5" max="2" value="1" step="0.1">
+            <span class="value-display">1</span>
+        </div>
+        <div class="visual-control">
+            <label for="explosionEffect">Explosion Effect</label>
+            <input type="checkbox" id="explosionEffect">
+        </div>
+        <div class="visual-control">
+            <label for="gravitationalPull">Gravitational Pull</label>
+            <input type="checkbox" id="gravitationalPull">
+        </div>
+        <div class="visual-control">
+            <label for="colorCycleSpeed">Color Cycle Speed</label>
+            <input type="range" id="colorCycleSpeed" min="0" max="0.01" value="0.001" step="0.001">
+            <span class="value-display">0.001</span>
+        </div>
+        <div class="visual-control">
+            <label for="particleInteraction">Particle Interaction</label>
+            <input type="checkbox" id="particleInteraction">
+        </div>
+        <div class="visual-control">
+            <label for="particleOpacity">Particle Opacity</label>
+            <input type="range" id="particleOpacity" min="0.1" max="1" value="1" step="0.1">
+            <span class="value-display">1</span>
+        </div>
+    </div>
+
+    <canvas id="myCanvas"></canvas>
+    <button id="exitFullscreenBtn">✕ Exit Fullscreen</button>
+
+    <script>
+        // Visual configuration
+        const visualConfig = {
+            bgColor: '#1a1a2e',
+            shapeColorMode: 'random',
+            particleCount: 30,
+            bounceIntensity: 1,
+            trailEffect: false,
+            trailLength: 0.1,
+            glowIntensity: 15,
+            rotationSpeed: 1,
+            pulseEffect: true,
+            shapeMorph: false,
+            morphInterval: 3000,
+            rainbowMode: false,
+            particleSize: 1,
+            explosionEffect: true,
+            gravitationalPull: false,
+            colorCycleSpeed: 0.001,
+            particleInteraction: false,
+            bounceSoundPitch: 1,
+            particleOpacity: 1
+        };
+
+        // Fullscreen handling
+        const fullscreenBtn = document.getElementById('fullscreenBtn');
+        const exitFullscreenBtn = document.getElementById('exitFullscreenBtn');
+        let isFullscreen = false;
+
+        function toggleFullscreen() {
+            if (!isFullscreen) {
+                if (document.documentElement.requestFullscreen) {
+                    document.documentElement.requestFullscreen();
+                } else if (document.documentElement.mozRequestFullScreen) {
+                    document.documentElement.mozRequestFullScreen();
+                } else if (document.documentElement.webkitRequestFullscreen) {
+                    document.documentElement.webkitRequestFullscreen();
+                } else if (document.documentElement.msRequestFullscreen) {
+                    document.documentElement.msRequestFullscreen();
+                }
+                document.body.classList.add('fullscreen-mode');
+            } else {
+                if (document.exitFullscreen) {
+                    document.exitFullscreen();
+                } else if (document.mozCancelFullScreen) {
+                    document.mozCancelFullScreen();
+                } else if (document.webkitExitFullscreen) {
+                    document.webkitExitFullscreen();
+                } else if (document.msExitFullscreen) {
+                    document.msExitFullscreen();
+                }
+                document.body.classList.remove('fullscreen-mode');
+            }
+            isFullscreen = !isFullscreen;
+            setupCanvas(); // Resize canvas to match new dimensions
+        }
+
+        fullscreenBtn.addEventListener('click', toggleFullscreen);
+        exitFullscreenBtn.addEventListener('click', toggleFullscreen);
+
+        // Handle fullscreen change events
+        document.addEventListener('fullscreenchange', handleFullscreenChange);
+        document.addEventListener('webkitfullscreenchange', handleFullscreenChange);
+        document.addEventListener('mozfullscreenchange', handleFullscreenChange);
+        document.addEventListener('MSFullscreenChange', handleFullscreenChange);
+
+        function handleFullscreenChange() {
+            isFullscreen = !!(document.fullscreenElement || document.webkitFullscreenElement ||
+                document.mozFullScreenElement || document.msFullscreenElement);
+
+            if (!isFullscreen) {
+                document.body.classList.remove('fullscreen-mode');
+            }
+            setupCanvas();
+        }
+
+        // 1) maxShapes config - update to include minShapes
+        let maxShapes = 10;
+        let minShapes = 3; // Add minimum shapes
+        const maxShapesInput = document.getElementById("maxShapes");
+        const minShapesInput = document.getElementById("minShapes"); // Add this line
+
+        maxShapesInput.addEventListener("change", () => {
+            maxShapes = Math.min(20, Math.max(minShapes, parseInt(maxShapesInput.value) || 10));
+            maxShapesInput.value = maxShapes;
+            while (shapes.length > maxShapes) {
+                shapes.pop();
+            }
+        });
+
+        minShapesInput.addEventListener("change", () => {
+            minShapes = Math.min(maxShapes, Math.max(1, parseInt(minShapesInput.value) || 3));
+            minShapesInput.value = minShapes;
+            if (shapes.length < minShapes) {
+                startShapes(); // Respawn shapes if below minimum
+            }
+        });
+
+        // 2) Basic audio setup
+        let audioCtx = null;
+        let analyser = null;
+        let audioData = null;
+        let masterGain = null;
+        let reverbNode = null;
+        let dryGainNode = null;
+        let wetGainNode = null;
+        let filterNode = null;
+        let octaveShift = 0;
+
+        // Add global parameters for sound shaping
+        let globalParams = {
+            attack: 0.01,
+            decay: 0.5,
+            resonance: 1,
+            detune: 0,
+            lfoRate: 0,
+            lfoDepth: 0
+        };
+
+        // Add LFO nodes
+        let globalLFO = null;
+        let globalLFOGain = null;
+
+        try {
+            audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            analyser = audioCtx.createAnalyser();
+            masterGain = audioCtx.createGain();
+            filterNode = audioCtx.createBiquadFilter();
+
+            // Create LFO
+            globalLFO = audioCtx.createOscillator();
+            globalLFOGain = audioCtx.createGain();
+            globalLFO.frequency.setValueAtTime(0, audioCtx.currentTime);
+            globalLFOGain.gain.setValueAtTime(0, audioCtx.currentTime);
+            globalLFO.connect(globalLFOGain);
+            globalLFOGain.connect(filterNode.frequency);
+            globalLFO.start();
+
+            // Create reverb
+            reverbNode = audioCtx.createConvolver();
+            dryGainNode = audioCtx.createGain();
+            wetGainNode = audioCtx.createGain();
+
+            // Create impulse response for reverb
+            const sampleRate = audioCtx.sampleRate;
+            const length = sampleRate * 2.5;  // 2.5 seconds
+            const impulse = audioCtx.createBuffer(2, length, sampleRate);
+
+            for (let channel = 0; channel < 2; channel++) {
+                const channelData = impulse.getChannelData(channel);
+                for (let i = 0; i < length; i++) {
+                    const decay = Math.exp(-i / (sampleRate * 0.5));
+                    channelData[i] = (Math.random() * 2 - 1) * decay;
+                }
+            }
+
+            reverbNode.buffer = impulse;
+
+            // Set up filter
+            filterNode.type = 'lowpass';
+            filterNode.frequency.setValueAtTime(20000, audioCtx.currentTime);
+            filterNode.Q.setValueAtTime(1, audioCtx.currentTime);
+
+            // Connect audio graph with filter
+            masterGain.connect(filterNode);
+            filterNode.connect(dryGainNode);
+            filterNode.connect(wetGainNode);
+            wetGainNode.connect(reverbNode);
+            dryGainNode.connect(analyser);
+            reverbNode.connect(analyser);
+            analyser.connect(audioCtx.destination);
+
+            // Set initial reverb mix
+            const reverbMix = document.getElementById("reverbMix");
+            const updateReverbMix = () => {
+                const mix = reverbMix.value / 100;
+                wetGainNode.gain.setValueAtTime(mix * 0.6, audioCtx.currentTime);
+                dryGainNode.gain.setValueAtTime(1 - mix * 0.5, audioCtx.currentTime);
+            };
+            reverbMix.addEventListener("input", updateReverbMix);
+            updateReverbMix();
+
+            // Set up filter control
+            const filterCutoff = document.getElementById("filterCutoff");
+            filterCutoff.addEventListener("input", () => {
+                const minFreq = 20;
+                const maxFreq = 20000;
+                const value = filterCutoff.value / 100;
+                // Exponential scale for frequency
+                const freq = minFreq * Math.pow(maxFreq / minFreq, value);
+                filterNode.frequency.setValueAtTime(freq, audioCtx.currentTime);
+            });
+
+            // Set up octave control
+            const octaveShiftInput = document.getElementById("octaveShift");
+            const octaveDisplay = octaveShiftInput.nextElementSibling;
+            octaveShiftInput.addEventListener("input", () => {
+                octaveShift = parseInt(octaveShiftInput.value);
+                octaveDisplay.textContent = octaveShift;
+            });
+
+            analyser.fftSize = 256;
+            audioData = new Uint8Array(analyser.frequencyBinCount);
+
+            // Set up value displays and controls
+            const setupControl = (id, callback) => {
+                const control = document.getElementById(id);
+                const display = control.nextElementSibling;
+                control.addEventListener('input', () => {
+                    display.textContent = control.value;
+                    callback(control.value);
+                });
+                return control;
+            };
+
+            // Volume control with display
+            setupControl('volumeSlider', (value) => {
+                const volume = value / 100;
+                masterGain.gain.setValueAtTime(volume, audioCtx.currentTime);
+            });
+
+            // Reverb control with display
+            setupControl('reverbMix', (value) => {
+                const mix = value / 100;
+                wetGainNode.gain.setValueAtTime(mix * 0.6, audioCtx.currentTime);
+                dryGainNode.gain.setValueAtTime(1 - mix * 0.5, audioCtx.currentTime);
+            });
+
+            // Filter control with display
+            setupControl('filterCutoff', (value) => {
+                const minFreq = 20;
+                const maxFreq = 20000;
+                const normalized = value / 100;
+                const freq = minFreq * Math.pow(maxFreq / minFreq, normalized);
+                filterNode.frequency.setValueAtTime(freq, audioCtx.currentTime);
+            });
+
+            // Attack control
+            setupControl('attack', (value) => {
+                globalParams.attack = value / 1000;
+            });
+
+            // Decay control
+            setupControl('decay', (value) => {
+                globalParams.decay = value / 1000;
+            });
+
+            // Resonance control
+            setupControl('resonance', (value) => {
+                globalParams.resonance = value;
+                filterNode.Q.setValueAtTime(value, audioCtx.currentTime);
+            });
+
+            // Detune control
+            setupControl('detune', (value) => {
+                globalParams.detune = value;
+            });
+
+            // LFO Rate control
+            setupControl('lfoRate', (value) => {
+                globalParams.lfoRate = value;
+                globalLFO.frequency.setValueAtTime(value, audioCtx.currentTime);
+            });
+
+            // LFO Depth control
+            setupControl('lfoDepth', (value) => {
+                globalParams.lfoDepth = value;
+                const normalizedDepth = (value / 100) * 2000; // Scale to frequency range
+                globalLFOGain.gain.setValueAtTime(normalizedDepth, audioCtx.currentTime);
+            });
+        } catch (e) {
+            console.warn("Web Audio not supported.");
+        }
+
+        // "piano" wave partials
+        let pianoWave = null;
+        function initPianoWave() {
+            if (!audioCtx) return;
+            const real = new Float32Array([0, 1, 0.5, 0.3, 0.1]);
+            const imag = new Float32Array(real.length);
+            pianoWave = audioCtx.createPeriodicWave(real, imag, {
+                disableNormalization: false,
+            });
+        }
+
+        // Synth selection
+        let globalInstrument = "sine";
+        const synthSelect = document.getElementById("synthSelect");
+        synthSelect.addEventListener("change", () => {
+            globalInstrument = synthSelect.value;
+        });
+
+        // refresh & record
+        const refreshBtn = document.getElementById("refreshBtn");
+        refreshBtn.addEventListener("click", () => {
+            shapes.length = 0;
+            sparkles.length = 0;
+            startShapes();
+        });
+
+        let recordBtn = document.getElementById("recordBtn");
+        let isRecording = false;
+        let recordStartTime = 0;
+        let recordedNotes = [];
+
+        const fileSection = document.getElementById("fileSection");
+        const fileLinksDiv = document.getElementById("fileLinks");
+
+        recordBtn.addEventListener("click", () => {
+            if (!isRecording) {
+                isRecording = true;
+                recordBtn.textContent = "Stop";
+                recordedNotes = [];
+                recordStartTime = performance.now();
+                console.log("Recording started.");
+            } else {
+                isRecording = false;
+                recordBtn.textContent = "Record";
+                console.log("Recording stopped.");
+                if (recordedNotes.length > 0) {
+                    let midiData = generateMidiFile(recordedNotes);
+                    let filename = "recorded_" + Date.now() + ".mid";
+                    downloadMidi(midiData, filename);
+                    addFileLink(filename, midiData);
+                } else {
+                    alert("No notes recorded.");
+                }
+            }
+        });
+
+        // Files popup handling
+        const filesBtn = document.getElementById("filesBtn");
+        const overlay = document.getElementById("overlay");
+        const closeFiles = document.getElementById("closeFiles");
+
+        function showFiles() {
+            fileSection.style.display = "block";
+            overlay.style.display = "block";
+        }
+
+        function hideFiles() {
+            fileSection.style.display = "none";
+            overlay.style.display = "none";
+        }
+
+        filesBtn.addEventListener("click", showFiles);
+        closeFiles.addEventListener("click", hideFiles);
+        overlay.addEventListener("click", hideFiles);
+
+        function addFileLink(filename, midiData) {
+            let link = document.createElement("a");
+            link.textContent = filename;
+            link.className = "file-link";
+            link.href = "#";
+            link.addEventListener("click", () => {
+                downloadMidi(midiData, filename);
+            });
+            fileLinksDiv.appendChild(link);
+            showFiles();
+        }
+
+        function recordNote(midi) {
+            if (!isRecording) return;
+            const tOff = performance.now() - recordStartTime;
+            recordedNotes.push({ time: tOff, midi });
+        }
+
+        function generateMidiFile(events) {
+            events.sort((a, b) => a.time - b.time);
+
+            function varInt(value) {
+                let arr = [];
+                while (true) {
+                    let b = value & 0x7F;
+                    value >>= 7;
+                    if (value > 0) {
+                        b |= 0x80; arr.push(b);
+                    } else {
+                        arr.push(b);
+                        break;
+                    }
+                }
+                return arr;
+            }
+
+            let onOff = [];
+            for (let ev of events) {
+                onOff.push({ time: ev.time, midi: ev.midi, on: true });
+                onOff.push({ time: ev.time + 200, midi: ev.midi, on: false });
+            }
+            onOff.sort((a, b) => a.time - b.time);
+
+            let trackEvents = [];
+            let lastT = 0;
+            for (let ev of onOff) {
+                let dt = ev.time - lastT;
+                let ticks = Math.round(dt * 0.12);
+                trackEvents.push(...varInt(ticks));
+
+                if (ev.on) {
+                    trackEvents.push(0x90, ev.midi, 64);
+                } else {
+                    trackEvents.push(0x80, ev.midi, 64);
+                }
+                lastT = ev.time;
+            }
+            trackEvents.push(...varInt(0));
+            trackEvents.push(0xFF, 0x2F, 0x00);
+
+            let trackLen = trackEvents.length;
+            let trackLenBytes = [
+                (trackLen >>> 24) & 0xFF,
+                (trackLen >>> 16) & 0xFF,
+                (trackLen >>> 8) & 0xFF,
+                trackLen & 0xFF,
+            ];
+            const trackHeader = [0x4D, 0x54, 0x72, 0x6B, ...trackLenBytes];
+            let trackData = [...trackHeader, ...trackEvents];
+
+            let header = [0x4D, 0x54, 0x68, 0x64, 0, 0, 0, 6, 0, 1, 0, 1, 0, 0x78];
+            let fileData = [...header, ...trackData];
+            return new Uint8Array(fileData);
+        }
+
+        function downloadMidi(midiData, filename) {
+            let blob = new Blob([midiData], { type: "audio/midi" });
+            let url = URL.createObjectURL(blob);
+            let a = document.createElement("a");
+            a.href = url;
+            a.download = filename;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        }
+
+        // define randomHSL => fix reference
+        function randomHSL() {
+            let h, s, l;
+
+            switch (visualConfig.shapeColorMode) {
+                case 'gradient':
+                    // Use a base hue and vary it slightly
+                    const baseHue = performance.now() / 10000;
+                    h = (baseHue + Math.random() * 0.2) % 1;
+                    s = 0.8;
+                    l = 0.5;
+                    break;
+
+                case 'monochrome':
+                    // Use a fixed hue but vary saturation and lightness
+                    h = parseInt(visualConfig.bgColor.slice(1), 16) / 0xFFFFFF;
+                    s = 0.3 + Math.random() * 0.4;
+                    l = 0.3 + Math.random() * 0.4;
+                    break;
+
+                case 'random':
+                default:
+                    // Completely random colors
+                    h = Math.random();
+                    s = 0.7 + Math.random() * 0.3;
+                    l = 0.4 + Math.random() * 0.3;
+                    break;
+            }
+
+            return { h, s, l };
+        }
+
+        ///////////////////////////////////////////////////
+        // define getMidiFromX => fix reference
+        ///////////////////////////////////////////////////
+        function getMidiFromX(x, canvasWidth) {
+            let frac = x / canvasWidth;
+            let idx = Math.floor(frac * totalNotes);
+            if (idx < 0) idx = 0;
+            if (idx >= totalNotes) idx = totalNotes - 1;
+            return 48 + idx; // minMidi = 48
+        }
+
+        ///////////////////////////////////////////////////
+        // define midiToFreq => to get freq from MIDI note
+        ///////////////////////////////////////////////////
+        function midiToFreq(midi) {
+            return 440 * Math.pow(2, (midi - 69) / 12);
+        }
+
+        // Synth presets
+        const synthPresets = {
+            tb303: {
+                cutoff: 1000,
+                resonance: 10,
+                envMod: 0.3,
+                decay: 0.3
+            },
+            acid: {
+                cutoff: 2000,
+                resonance: 20,
+                envMod: 0.6,
+                decay: 0.2,
+                accent: 0.4
+            },
+            fm: {
+                modulationIndex: 5,
+                harmonicity: 2,
+                decay: 0.5
+            },
+            pwm: {
+                pulseWidth: 0.3,
+                lfoFreq: 0.5,
+                lfoDepth: 0.1
+            },
+            supersaw: {
+                detune: 0.3,
+                voices: 7,
+                mix: 0.5
+            },
+            pluck: {
+                feedback: 0.5,
+                damping: 0.2,
+                decay: 0.3
+            },
+            organ: {
+                harmonics: [1, 0.7, 0.5, 0.3, 0.2],
+                attack: 0.02,
+                decay: 0.3
+            },
+            bells: {
+                harmonics: [1, 0.6, 0.4, 0.25],
+                attack: 0.01,
+                decay: 2.0
+            },
+            pad: {
+                harmonics: [1, 0.5, 0.33],
+                attack: 0.1,
+                decay: 1.0,
+                detune: 0.1
+            },
+            subbass: {
+                harmonics: [1, 0.5],
+                attack: 0.01,
+                decay: 0.3,
+                filter: {
+                    frequency: 200,
+                    resonance: 2
+                }
+            },
+            wobble: {
+                carrier: {
+                    type: 'sawtooth',
+                    detune: 10
+                },
+                lfo: {
+                    frequency: 4,
+                    depth: 2000
+                },
+                filter: {
+                    frequency: 1000,
+                    resonance: 10
+                }
+            }
+        };
+
+        function createAcidSound(freq, time) {
+            const osc = audioCtx.createOscillator();
+            const filter = audioCtx.createBiquadFilter();
+            const gain = audioCtx.createGain();
+
+            osc.type = 'sawtooth';
+            osc.frequency.setValueAtTime(freq, time);
+
+            filter.type = 'lowpass';
+            filter.frequency.setValueAtTime(synthPresets.acid.cutoff, time);
+            filter.frequency.exponentialRampToValueAtTime(
+                freq * 4 * synthPresets.acid.envMod,
+                time + 0.05
+            );
+            filter.Q.setValueAtTime(synthPresets.acid.resonance, time);
+
+            gain.gain.setValueAtTime(0.7, time);
+            gain.gain.exponentialRampToValueAtTime(0.01, time + synthPresets.acid.decay);
+
+            osc.connect(filter);
+            filter.connect(gain);
+
+            return { osc, gain };
+        }
+
+        function createSuperSawSound(freq, time) {
+            const voices = [];
+            const mainGain = audioCtx.createGain();
+            mainGain.gain.setValueAtTime(0.5, time);
+            mainGain.gain.exponentialRampToValueAtTime(0.01, time + 0.5);
+
+            for (let i = 0; i < synthPresets.supersaw.voices; i++) {
+                const osc = audioCtx.createOscillator();
+                const gain = audioCtx.createGain();
+
+                const detune = (i - (synthPresets.supersaw.voices - 1) / 2) *
+                    synthPresets.supersaw.detune * 100;
+
+                osc.type = 'sawtooth';
+                osc.frequency.setValueAtTime(freq, time);
+                osc.detune.setValueAtTime(detune, time);
+
+                gain.gain.setValueAtTime(1 / synthPresets.supersaw.voices, time);
+
+                osc.connect(gain);
+                gain.connect(mainGain);
+                voices.push(osc);
+            }
+
+            return {
+                osc: voices[0],
+                gain: mainGain,
+                cleanup: () => voices.slice(1).forEach(v => v.stop()),
+                start: (t) => voices.forEach(v => v.start(t)),
+                stop: (t) => voices.forEach(v => v.stop(t))
+            };
+        }
+
+        function createPluckSound(freq, time) {
+            const osc = audioCtx.createOscillator();
+            const filter = audioCtx.createBiquadFilter();
+            const delay = audioCtx.createDelay();
+            const feedback = audioCtx.createGain();
+            const gain = audioCtx.createGain();
+
+            osc.type = 'triangle';
+            osc.frequency.setValueAtTime(freq, time);
+
+            filter.type = 'lowpass';
+            filter.frequency.setValueAtTime(freq * 2, time);
+            filter.Q.setValueAtTime(1, time);
+
+            delay.delayTime.setValueAtTime(1 / freq, time);
+            feedback.gain.setValueAtTime(synthPresets.pluck.feedback, time);
+
+            gain.gain.setValueAtTime(0.5, time);
+            gain.gain.exponentialRampToValueAtTime(0.01, time + synthPresets.pluck.decay);
+
+            osc.connect(filter);
+            filter.connect(delay);
+            delay.connect(feedback);
+            feedback.connect(delay);
+            delay.connect(gain);
+
+            return { osc, gain };
+        }
+
+        function createTB303Sound(freq, time) {
+            const osc = audioCtx.createOscillator();
+            const filter = audioCtx.createBiquadFilter();
+            const gain = audioCtx.createGain();
+
+            osc.type = 'sawtooth';
+            osc.frequency.setValueAtTime(freq, time);
+
+            filter.type = 'lowpass';
+            filter.frequency.setValueAtTime(synthPresets.tb303.cutoff, time);
+            filter.frequency.exponentialRampToValueAtTime(
+                freq * 2 * synthPresets.tb303.envMod,
+                time + 0.1
+            );
+            filter.Q.setValueAtTime(synthPresets.tb303.resonance, time);
+
+            gain.gain.setValueAtTime(0.5, time);
+            gain.gain.exponentialRampToValueAtTime(0.01, time + synthPresets.tb303.decay);
+
+            osc.connect(filter);
+            filter.connect(gain);
+
+            return { osc, gain };
+        }
+
+        function createFMSound(freq, time) {
+            const carrier = audioCtx.createOscillator();
+            const modulator = audioCtx.createOscillator();
+            const modGain = audioCtx.createGain();
+            const gain = audioCtx.createGain();
+
+            carrier.frequency.setValueAtTime(freq, time);
+            modulator.frequency.setValueAtTime(freq * synthPresets.fm.harmonicity, time);
+            modGain.gain.setValueAtTime(freq * synthPresets.fm.modulationIndex, time);
+
+            gain.gain.setValueAtTime(0.5, time);
+            gain.gain.exponentialRampToValueAtTime(0.01, time + synthPresets.fm.decay);
+
+            modulator.connect(modGain);
+            modGain.connect(carrier.frequency);
+            carrier.connect(gain);
+
+            modulator.start(time);
+            modulator.stop(time + 0.5);
+
+            return { osc: carrier, gain, cleanup: () => modulator.stop() };
+        }
+
+        function createPWMSound(freq, time) {
+            const osc = audioCtx.createOscillator();
+            const lfo = audioCtx.createOscillator();
+            const lfoGain = audioCtx.createGain();
+            const gain = audioCtx.createGain();
+
+            const real = new Float32Array([0, 1, 1]);
+            const imag = new Float32Array([0, 0, 0]);
+            const wave = audioCtx.createPeriodicWave(real, imag);
+
+            osc.setPeriodicWave(wave);
+            osc.frequency.setValueAtTime(freq, time);
+
+            lfo.frequency.setValueAtTime(synthPresets.pwm.lfoFreq, time);
+            lfoGain.gain.setValueAtTime(synthPresets.pwm.lfoDepth, time);
+
+            gain.gain.setValueAtTime(0.5, time);
+            gain.gain.exponentialRampToValueAtTime(0.01, time + 0.5);
+
+            lfo.connect(lfoGain);
+            lfoGain.connect(osc.frequency);
+            osc.connect(gain);
+
+            lfo.start(time);
+            lfo.stop(time + 0.5);
+
+            return { osc, gain, cleanup: () => lfo.stop() };
+        }
+
+        function createOrganSound(freq, time) {
+            const gain = audioCtx.createGain();
+            const oscs = [];
+
+            synthPresets.organ.harmonics.forEach((amp, i) => {
+                const osc = audioCtx.createOscillator();
+                const oscGain = audioCtx.createGain();
+
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(freq * (i + 1), time);
+                oscGain.gain.setValueAtTime(amp * 0.2, time);
+
+                osc.connect(oscGain);
+                oscGain.connect(gain);
+                oscs.push(osc);
+            });
+
+            gain.gain.setValueAtTime(0, time);
+            gain.gain.linearRampToValueAtTime(0.5, time + synthPresets.organ.attack);
+            gain.gain.exponentialRampToValueAtTime(0.01, time + synthPresets.organ.decay);
+
+            return {
+                osc: oscs[0],
+                gain,
+                start: t => oscs.forEach(o => o.start(t)),
+                stop: t => oscs.forEach(o => o.stop(t))
+            };
+        }
+
+        function createBellsSound(freq, time) {
+            const gain = audioCtx.createGain();
+            const oscs = [];
+
+            synthPresets.bells.harmonics.forEach((amp, i) => {
+                const osc = audioCtx.createOscillator();
+                const oscGain = audioCtx.createGain();
+
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(freq * (i + 1), time);
+                oscGain.gain.setValueAtTime(amp * 0.3, time);
+
+                osc.connect(oscGain);
+                oscGain.connect(gain);
+                oscs.push(osc);
+            });
+
+            gain.gain.setValueAtTime(0, time);
+            gain.gain.linearRampToValueAtTime(0.7, time + synthPresets.bells.attack);
+            gain.gain.exponentialRampToValueAtTime(0.01, time + synthPresets.bells.decay);
+
+            return {
+                osc: oscs[0],
+                gain,
+                start: t => oscs.forEach(o => o.start(t)),
+                stop: t => oscs.forEach(o => o.stop(t))
+            };
+        }
+
+        function createPadSound(freq, time) {
+            const gain = audioCtx.createGain();
+            const oscs = [];
+
+            synthPresets.pad.harmonics.forEach((amp, i) => {
+                for (let v = 0; v < 3; v++) {
+                    const osc = audioCtx.createOscillator();
+                    const oscGain = audioCtx.createGain();
+
+                    osc.type = 'sine';
+                    const detune = (v - 1) * synthPresets.pad.detune * 100;
+                    osc.frequency.setValueAtTime(freq * (i + 1), time);
+                    osc.detune.setValueAtTime(detune, time);
+                    oscGain.gain.setValueAtTime(amp * 0.15, time);
+
+                    osc.connect(oscGain);
+                    oscGain.connect(gain);
+                    oscs.push(osc);
+                }
+            });
+
+            gain.gain.setValueAtTime(0, time);
+            gain.gain.linearRampToValueAtTime(0.5, time + synthPresets.pad.attack);
+            gain.gain.exponentialRampToValueAtTime(0.01, time + synthPresets.pad.decay);
+
+            return {
+                osc: oscs[0],
+                gain,
+                start: t => oscs.forEach(o => o.start(t)),
+                stop: t => oscs.forEach(o => o.stop(t))
+            };
+        }
+
+        function createSubBassSound(freq, time) {
+            const gain = audioCtx.createGain();
+            const oscs = [];
+            const filter = audioCtx.createBiquadFilter();
+
+            filter.type = 'lowpass';
+            filter.frequency.setValueAtTime(synthPresets.subbass.filter.frequency, time);
+            filter.Q.setValueAtTime(synthPresets.subbass.filter.resonance, time);
+
+            synthPresets.subbass.harmonics.forEach((amp, i) => {
+                const osc = audioCtx.createOscillator();
+                const oscGain = audioCtx.createGain();
+
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(freq * (i + 1) / 2, time);
+                oscGain.gain.setValueAtTime(amp * 0.5, time);
+
+                osc.connect(oscGain);
+                oscGain.connect(filter);
+                oscs.push(osc);
+            });
+
+            filter.connect(gain);
+            gain.gain.setValueAtTime(0, time);
+            gain.gain.linearRampToValueAtTime(0.7, time + synthPresets.subbass.attack);
+            gain.gain.exponentialRampToValueAtTime(0.01, time + synthPresets.subbass.decay);
+
+            return {
+                osc: oscs[0],
+                gain,
+                start: t => oscs.forEach(o => o.start(t)),
+                stop: t => oscs.forEach(o => o.stop(t))
+            };
+        }
+
+        function createWobbleSound(freq, time) {
+            const gain = audioCtx.createGain();
+            const osc = audioCtx.createOscillator();
+            const lfo = audioCtx.createOscillator();
+            const lfoGain = audioCtx.createGain();
+            const filter = audioCtx.createBiquadFilter();
+
+            osc.type = synthPresets.wobble.carrier.type;
+            osc.frequency.setValueAtTime(freq, time);
+            osc.detune.setValueAtTime(synthPresets.wobble.carrier.detune, time);
+
+            lfo.frequency.setValueAtTime(synthPresets.wobble.lfo.frequency, time);
+            lfoGain.gain.setValueAtTime(synthPresets.wobble.lfo.depth, time);
+
+            filter.type = 'lowpass';
+            filter.frequency.setValueAtTime(synthPresets.wobble.filter.frequency, time);
+            filter.Q.setValueAtTime(synthPresets.wobble.filter.resonance, time);
+
+            lfo.connect(lfoGain);
+            lfoGain.connect(filter.frequency);
+            osc.connect(filter);
+            filter.connect(gain);
+
+            gain.gain.setValueAtTime(0.5, time);
+            gain.gain.exponentialRampToValueAtTime(0.01, time + 0.5);
+
+            lfo.start(time);
+            lfo.stop(time + 0.5);
+
+            return { osc, gain, cleanup: () => lfo.stop() };
+        }
+
+        function playInstrument(freq, midi) {
+            if (!audioCtx) return;
+
+            // Apply octave shift
+            freq *= Math.pow(2, octaveShift);
+            midi += octaveShift * 12;
+
+            const time = audioCtx.currentTime;
+            let synth;
+
+            // Apply global detune
+            freq *= Math.pow(2, (globalParams.detune - 50) / 1200); // Convert cents to frequency ratio
+
+            switch (globalInstrument) {
+                case 'piano':
+                    synth = {
+                        osc: audioCtx.createOscillator(),
+                        gain: audioCtx.createGain()
+                    };
+                    synth.osc.setPeriodicWave(pianoWave);
+                    synth.osc.frequency.setValueAtTime(freq, time);
+                    synth.gain.gain.setValueAtTime(0.5, time);
+                    synth.gain.gain.exponentialRampToValueAtTime(0.01, time + 0.5);
+                    break;
+
+                case 'tb303':
+                    synth = createTB303Sound(freq, time);
+                    break;
+
+                case 'acid':
+                    synth = createAcidSound(freq, time);
+                    break;
+
+                case 'fm':
+                    synth = createFMSound(freq, time);
+                    break;
+
+                case 'pwm':
+                    synth = createPWMSound(freq, time);
+                    break;
+
+                case 'supersaw':
+                    synth = createSuperSawSound(freq, time);
+                    break;
+
+                case 'pluck':
+                    synth = createPluckSound(freq, time);
+                    break;
+
+                case 'organ':
+                    synth = createOrganSound(freq, time);
+                    break;
+
+                case 'bells':
+                    synth = createBellsSound(freq, time);
+                    break;
+
+                case 'pad':
+                    synth = createPadSound(freq, time);
+                    break;
+
+                case 'subbass':
+                    synth = createSubBassSound(freq, time);
+                    break;
+
+                case 'wobble':
+                    synth = createWobbleSound(freq, time);
+                    break;
+
+                default:
+                    synth = {
+                        osc: audioCtx.createOscillator(),
+                        gain: audioCtx.createGain()
+                    };
+                    synth.osc.type = globalInstrument;
+                    synth.osc.frequency.setValueAtTime(freq, time);
+
+                    // Apply attack and decay
+                    synth.gain.gain.setValueAtTime(0, time);
+                    synth.gain.gain.linearRampToValueAtTime(0.5, time + globalParams.attack);
+                    synth.gain.gain.exponentialRampToValueAtTime(0.01, time + globalParams.attack + globalParams.decay);
+            }
+
+            if (synth.start) {
+                synth.osc.connect(synth.gain);
+                synth.gain.connect(masterGain);
+                synth.start(time);
+                synth.stop(time + 2.0);
+            } else {
+                synth.osc.connect(synth.gain);
+                synth.gain.connect(masterGain);
+                synth.osc.start(time);
+                synth.osc.stop(time + 2.0);
+            }
+
+            recordNote(midi);
+        }
+
+        // main canvas references
+        const canvas = document.getElementById("myCanvas");
+        const ctx = canvas.getContext("2d");
+        let W = canvas.width;
+        let H = canvas.height;
+
+        const shapes = [];
+        const sparkles = [];
+
+        const minMidi = 48;
+        const maxMidi = 72;
+        const totalNotes = maxMidi - minMidi + 1;
+        let pianoKeys = [];
+        const pianoKeyHeight = 120; // Increased from 80 to 120
+        let keyWidth = W / totalNotes;
+
+        const noteNames = ["C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"];
+
+        function initPiano() {
+            keyWidth = W / totalNotes;
+            pianoKeys = [];
+            for (let i = 0; i < totalNotes; i++) {
+                let midi = minMidi + i;
+                let note = noteNames[midi % 12] + (Math.floor(midi / 12) - 1);
+                pianoKeys.push({
+                    x: i * keyWidth,
+                    w: keyWidth,
+                    midi,
+                    noteName: note,
+                    highlightAlpha: 0
+                });
+            }
+        }
+
+        function highlightKey(midi) {
+            for (let k of pianoKeys) {
+                if (k.midi === midi) {
+                    k.highlightAlpha = 1;
+                    break;
+                }
+            }
+            pianoKeys = [];
+            for (let i = 0; i < totalNotes; i++) {
+                let midi = minMidi + i;
+                let note = noteNames[midi % 12] + (Math.floor(midi / 12) - 1);
+                pianoKeys.push({
+                    x: i * keyWidth,
+                    w: keyWidth,
+                    midi,
+                    noteName: note,
+                    highlightAlpha: 0
+                });
+            }
+        }
+
+        function highlightKey(midi) {
+            for (let k of pianoKeys) {
+                if (k.midi === midi) {
+                    k.highlightAlpha = 1;
+                    break;
+                }
+            }
+        }
+
+        function drawPiano(ctx) {
+            ctx.save();
+            ctx.translate(0, H - pianoKeyHeight);
+            ctx.fillStyle = "lightgray";
+            ctx.fillRect(0, 0, W, pianoKeyHeight);
+
+            ctx.font = "14px sans-serif"; // Increased font size
+            ctx.textAlign = "center";
+            ctx.textBaseline = "middle";
+
+            for (let k of pianoKeys) {
+                if (k.highlightAlpha > 0) {
+                    k.highlightAlpha -= 0.02;
+                    if (k.highlightAlpha < 0) k.highlightAlpha = 0;
+                }
+                if (k.highlightAlpha > 0) {
+                    ctx.fillStyle = `rgba(255,200,100,${k.highlightAlpha})`;
+                } else {
+                    ctx.fillStyle = "white";
+                }
+
+                ctx.fillRect(k.x, 0, k.w, pianoKeyHeight);
+
+                ctx.strokeStyle = "black";
+                ctx.strokeRect(k.x, 0, k.w, pianoKeyHeight);
+
+                ctx.fillStyle = "black";
+                ctx.fillText(k.noteName, k.x + k.w * 0.5, pianoKeyHeight * 0.7); // Adjusted text position
+            }
+
+            ctx.restore();
+        }
+
+        // clamp
+        function clampVelocity(obj, maxSpeed) {
+            let speed = Math.sqrt(obj.vx * obj.vx + obj.vy * obj.vy);
+            if (speed > maxSpeed) {
+                let scl = maxSpeed / speed;
+                obj.vx *= scl;
+                obj.vy *= scl;
+            }
+        }
+        function clampAngularVel(shape, maxAngVel) {
+            if (Math.abs(shape.angularVel) > maxAngVel) {
+                shape.angularVel = maxAngVel * Math.sign(shape.angularVel);
+            }
+        }
+
+        class Sparkle {
+            constructor(x, y, color) {
+                this.x = x; this.y = y;
+                this.vx = (Math.random() - 0.5) * 4;
+                this.vy = (Math.random() - 0.5) * 4;
+                this.color = color;
+                this.alpha = 1;
+            }
+            update() {
+                this.x += this.vx;
+                this.y += this.vy;
+                this.alpha -= 0.03;
+            }
+            draw(ctx) {
+                if (this.alpha <= 0) return;
+                ctx.save();
+                ctx.globalAlpha = this.alpha;
+                ctx.fillStyle = this.color;
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, 4, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.restore();
+            }
+        }
+
+        function spawnSparkles(x, y) {
+            let count = 6;
+            for (let i = 0; i < count; i++) {
+                let hue = Math.random();
+                let sat = 0.7 + Math.random() * 0.3;
+                let lig = 0.5 + Math.random() * 0.3;
+                let c = `hsl(${hue * 360},${sat * 100}%,${lig * 100}%)`;
+                sparkles.push(new Sparkle(x, y, c));
+            }
+        }
+
+        class BouncingShape {
+            constructor(x, y, shapeType, size, h, s, l) {
+                this.x = x;
+                this.y = y;
+                this.shapeType = shapeType;
+                this.size = size;
+                this.originalSize = size;
+
+                this.vx = (Math.random() - 0.5) * 8;
+                this.vy = (Math.random() - 0.5) * 8;
+                this.h = h;
+                this.s = s;
+                this.l = l;
+                this.baseHue = h;
+
+                this.groundBounces = 0;
+                this.gravity = 0.3;
+                this.maxSpeed = 15;
+
+                this.rotation = 0;
+                this.angularVel = (Math.random() - 0.5) * 0.02;
+                this.maxAngularVel = 0.2;
+
+                // Add pulse animation
+                this.pulsePhase = Math.random() * Math.PI * 2;
+                this.pulseSpeed = 0.05 + Math.random() * 0.05;
+
+                // Trail effect
+                this.trail = [];
+                this.maxTrailLength = 20;
+
+                // Enhanced morphing properties
+                this.morphTimer = 0;
+                this.morphProgress = 0;
+                this.currentShape = shapeType;
+                this.targetShape = shapeType;
+                this.morphDuration = 1000; // 1 second for transformation
+                this.shapeVertices = this.getShapeVertices(shapeType);
+                this.targetVertices = this.shapeVertices;
+
+                // Interaction
+                this.interactionForce = { x: 0, y: 0 };
+            }
+
+            getShapeVertices(type) {
+                switch (type) {
+                    case "circle":
+                        const segments = 12;
+                        const vertices = [];
+                        for (let i = 0; i < segments; i++) {
+                            const angle = (i / segments) * Math.PI * 2;
+                            vertices.push({
+                                x: Math.cos(angle),
+                                y: Math.sin(angle)
+                            });
+                        }
+                        return vertices;
+                    case "square":
+                        return [
+                            { x: -1, y: -1 }, { x: 1, y: -1 },
+                            { x: 1, y: 1 }, { x: -1, y: 1 }
+                        ];
+                    case "triangle":
+                        const h = Math.sqrt(3) / 2;
+                        return [
+                            { x: 0, y: -h },
+                            { x: -1, y: h / 2 },
+                            { x: 1, y: h / 2 }
+                        ];
+                }
+            }
+
+            startMorphing(newShape) {
+                if (this.currentShape !== newShape) {
+                    this.targetShape = newShape;
+                    this.morphProgress = 0;
+                    this.targetVertices = this.getShapeVertices(newShape);
+                }
+            }
+
+            interpolateVertices(progress) {
+                const vertices = [];
+                const currentVerts = this.shapeVertices;
+                const targetVerts = this.targetVertices;
+
+                // Use the shorter array length to avoid issues
+                const len = Math.min(currentVerts.length, targetVerts.length);
+
+                for (let i = 0; i < len; i++) {
+                    const current = currentVerts[i];
+                    const target = targetVerts[i];
+                    vertices.push({
+                        x: current.x + (target.x - current.x) * progress,
+                        y: current.y + (target.y - current.y) * progress
+                    });
+                }
+                return vertices;
+            }
+
+            update(canvasWidth, canvasHeight) {
+                // Update trail
+                if (visualConfig.trailEffect) {
+                    this.trail.unshift({ x: this.x, y: this.y, rotation: this.rotation });
+                    const maxTrail = Math.floor(20 * visualConfig.trailLength);
+                    if (this.trail.length > maxTrail) this.trail.length = maxTrail;
+                }
+
+                // Apply gravity and movement
+                if (!visualConfig.gravitationalPull) {
+                    this.vy += this.gravity;
+                } else {
+                    // Orbital motion around x-axis
+                    const centerY = canvasHeight / 2;
+                    const dy = centerY - this.y;
+                    const dist = Math.abs(dy);
+                    const force = 0.5 / (dist + 1);
+
+                    // Add tangential velocity for orbital motion
+                    const orbitalSpeed = 2;
+                    if (dy > 0) {
+                        this.vx += orbitalSpeed * force;
+                    } else {
+                        this.vx -= orbitalSpeed * force;
+                    }
+
+                    // Add radial force towards center
+                    this.vy += dy * force * 0.5;
+                }
+
+                // Particle interaction
+                if (visualConfig.particleInteraction) {
+                    for (let other of shapes) {
+                        if (other !== this) {
+                            const dx = other.x - this.x;
+                            const dy = other.y - this.y;
+                            const dist = Math.sqrt(dx * dx + dy * dy);
+                            if (dist < 100) {
+                                const force = 0.1 / (dist + 1);
+                                this.vx -= dx * force;
+                                this.vy -= dy * force;
+                            }
+                        }
+                    }
+                }
+
+                this.x += this.vx;
+                this.y += this.vy;
+
+                // Rainbow mode and color cycling
+                if (visualConfig.rainbowMode) {
+                    this.h = (this.h + visualConfig.colorCycleSpeed) % 1;
+                }
+
+                // Rotation based on speed setting
+                this.rotation += this.angularVel * visualConfig.rotationSpeed;
+
+                // Pulse animation
+                if (visualConfig.pulseEffect) {
+                    this.pulsePhase += this.pulseSpeed;
+                    const pulseFactor = 1 + Math.sin(this.pulsePhase) * 0.1;
+                    this.size = this.originalSize * pulseFactor * visualConfig.particleSize;
+                } else {
+                    this.size = this.originalSize * visualConfig.particleSize;
+                }
+
+                // Shape morphing update
+                if (visualConfig.shapeMorph) {
+                    this.morphTimer += 16;
+                    if (this.morphTimer >= visualConfig.morphInterval) {
+                        this.morphTimer = 0;
+                        const shapes = ["circle", "square", "triangle"];
+                        const newShape = shapes[Math.floor(Math.random() * shapes.length)];
+                        this.startMorphing(newShape);
+                    }
+                }
+
+                if (this.currentShape !== this.targetShape) {
+                    this.morphProgress += 0.02;
+                    if (this.morphProgress >= 1) {
+                        this.morphProgress = 0;
+                        this.currentShape = this.targetShape;
+                        this.shapeVertices = this.targetVertices;
+                    }
+                }
+
+                clampVelocity(this, this.maxSpeed);
+                clampAngularVel(this, this.maxAngularVel);
+
+                const edgeBuffer = 5;
+                let radius = this.size;
+
+                // Boundary checks and bouncing
+                if (this.x < radius + edgeBuffer) this.vx += 0.5;
+                else if (this.x > canvasWidth - radius - edgeBuffer) this.vx -= 0.5;
+                if (this.y < radius + edgeBuffer) this.vy += 0.5;
+                else if (this.y > canvasHeight - radius - edgeBuffer) this.vy -= 0.5;
+
+                if (this.x < radius) {
+                    this.x = radius;
+                    this.vx = -this.vx * 0.8 + (Math.random() - 0.5) * 3;
+                    this.angularVel += (Math.random() - 0.5) * 0.05;
+                } else if (this.x > canvasWidth - radius) {
+                    this.x = canvasWidth - radius;
+                    this.vx = -this.vx * 0.8 + (Math.random() - 0.5) * 3;
+                    this.angularVel += (Math.random() - 0.5) * 0.05;
+                }
+
+                // Ground collision with effects
+                if (this.y > canvasHeight - radius) {
+                    this.y = canvasHeight - radius;
+                    this.vy = -(10 + Math.random() * 15) * visualConfig.bounceIntensity;
+                    this.gravity = (0.2 + Math.random() * 0.2) * visualConfig.bounceIntensity;
+                    this.vx += (Math.random() - 0.5) * 4;
+                    this.groundBounces++;
+                    this.angularVel += (Math.random() - 0.5) * 0.1;
+
+                    let midi = getMidiFromX(this.x, canvasWidth);
+                    let freq = midiToFreq(midi);
+                    playInstrument(freq * visualConfig.bounceSoundPitch, midi);
+                    highlightKey(midi);
+
+                    // Explosion effect on bounce
+                    if (visualConfig.explosionEffect) {
+                        for (let i = 0; i < 6; i++) {
+                            spawnSparkles(this.x, this.y);
+                        }
+                    }
+
+                    // Add 15% chance to disappear if above minimum shapes
+                    if (Math.random() < 0.15 && shapes.length > minShapes) {
+                        const index = shapes.indexOf(this);
+                        if (index > -1) {
+                            shapes.splice(index, 1);
+                            // Add extra sparkles for disappearance
+                            for (let i = 0; i < 12; i++) {
+                                spawnSparkles(this.x, this.y);
+                            }
+                            return;
+                        }
+                    }
+
+                    if (this.groundBounces % 8 === 0 && Math.random() < 0.15 && shapes.length < maxShapes) {
+                        createShapeClone(this);
+                    }
+                }
+            }
+
+            draw(ctx) {
+                // Draw trail first
+                if (visualConfig.trailEffect && this.trail.length > 1) {
+                    ctx.beginPath();
+                    ctx.moveTo(this.trail[0].x, this.trail[0].y);
+                    for (let i = 1; i < this.trail.length; i++) {
+                        ctx.lineTo(this.trail[i].x, this.trail[i].y);
+                    }
+                    ctx.strokeStyle = `hsla(${this.h * 360},${this.s * 100}%,${this.l * 100}%,${visualConfig.trailLength})`;
+                    ctx.lineWidth = this.size / 2;
+                    ctx.lineCap = 'round';
+                    ctx.stroke();
+                }
+
+                // Draw shape
+                ctx.save();
+                ctx.translate(this.x, this.y);
+                ctx.rotate(this.rotation);
+
+                // Glow effect
+                ctx.shadowColor = `hsla(${this.h * 360}, ${this.s * 100}%, ${this.l * 100}%, 0.5)`;
+                ctx.shadowBlur = visualConfig.glowIntensity;
+
+                let colorStr = `hsla(${this.h * 360},${this.s * 100}%,${this.l * 100}%,${visualConfig.particleOpacity})`;
+                ctx.fillStyle = colorStr;
+                ctx.beginPath();
+
+                // Draw morphing shape
+                const vertices = this.currentShape !== this.targetShape ?
+                    this.interpolateVertices(this.morphProgress) :
+                    this.shapeVertices;
+
+                if (vertices.length > 0) {
+                    ctx.moveTo(vertices[0].x * this.size, vertices[0].y * this.size);
+                    for (let i = 1; i < vertices.length; i++) {
+                        ctx.lineTo(vertices[i].x * this.size, vertices[i].y * this.size);
+                    }
+                    ctx.closePath();
+                }
+
+                ctx.fill();
+
+                // Add subtle stroke
+                ctx.strokeStyle = `hsla(${this.h * 360}, ${this.s * 100}%, ${this.l * 100}%, ${visualConfig.particleOpacity * 0.3})`;
+                ctx.lineWidth = 2;
+                ctx.stroke();
+
+                ctx.restore();
+            }
+        }
+
+        function createShapeClone(original) {
+            if (shapes.length >= maxShapes) return;
+            let c = randomHSL();
+            let x = original.x;
+            let y = original.y - 2;
+            let newShape = new BouncingShape(
+                x, y,
+                original.shapeType,
+                original.size,
+                c.h, c.s, c.l
+            );
+            newShape.vy = -(10 + Math.random() * 15);
+            newShape.vx = (Math.random() - 0.5) * 8;
+            newShape.angularVel = (Math.random() - 0.5) * 0.02;
+            shapes.push(newShape);
+        }
+
+        // Update startShapes function to respect minShapes
+        function startShapes() {
+            shapes.length = 0;
+            const count = Math.max(minShapes, Math.min(visualConfig.particleCount, maxShapes));
+
+            for (let i = 0; i < count; i++) {
+                let x = Math.random() * (W - 60) + 30;
+                let y = Math.random() * (H - 60) + 30;
+                let c = randomHSL();
+                let shapeType = ["circle", "square", "triangle"][Math.floor(Math.random() * 3)];
+                let size = 20 + Math.random() * 20;
+
+                shapes.push(new BouncingShape(x, y, shapeType, size, c.h, c.s, c.l));
+            }
+        }
+
+        function setupCanvas() {
+            const pixelRatio = window.devicePixelRatio || 1;
+            const rect = canvas.getBoundingClientRect();
+
+            // Set canvas size to match its display size
+            canvas.width = rect.width * pixelRatio;
+            canvas.height = rect.height * pixelRatio;
+
+            // Scale the context to handle the pixel ratio
+            ctx.scale(pixelRatio, pixelRatio);
+
+            // Set canvas drawing dimensions to match display size
+            canvas.style.width = rect.width + 'px';
+            canvas.style.height = rect.height + 'px';
+
+            // Update internal dimensions for drawing
+            W = rect.width;
+            H = rect.height;
+
+            // Clear the canvas and redraw
+            ctx.clearRect(0, 0, W, H);
+
+            // Force a redraw if needed
+            if (shapes.length === 0) {
+                startShapes();
+            }
+
+            // Reinitialize piano keys with new width
+            initPiano();
+        }
+
+        function animate() {
+            requestAnimationFrame(animate);
+
+            if (visualConfig.trailEffect) {
+                ctx.fillStyle = `rgba(${hexToRgb(visualConfig.bgColor).join(',')}, 0.1)`;
+                ctx.fillRect(0, 0, W, H);
+            } else {
+                ctx.clearRect(0, 0, W, H);
+            }
+
+            // Draw in order: piano (bottom), visualization, shapes, sparkles (top)
+            drawPiano(ctx);
+
+            // Draw sound visualization above piano
+            if (analyser && audioData) {
+                analyser.getByteFrequencyData(audioData);
+
+                ctx.save();
+                const barWidth = W / audioData.length;
+                const barSpacing = 2;
+                const maxBarHeight = 150;
+                const yOffset = H - pianoKeyHeight - maxBarHeight - 30;
+
+                for (let i = 0; i < audioData.length; i++) {
+                    const barHeight = (audioData[i] / 255) * maxBarHeight;
+                    const hue = (i / audioData.length) * 360;
+                    ctx.fillStyle = `hsl(${hue}, 80%, 60%)`;
+                    ctx.fillRect(
+                        i * (barWidth + barSpacing),
+                        yOffset + maxBarHeight - barHeight,
+                        barWidth,
+                        barHeight
+                    );
+                }
+                ctx.restore();
+            }
+
+            // Update all objects with bounce intensity
+            for (let s of shapes) {
+                s.gravity = 0.3 * visualConfig.bounceIntensity;
+                s.update(W, H - pianoKeyHeight); // Adjust bounce area to account for piano
+            }
+            for (let i = sparkles.length - 1; i >= 0; i--) {
+                sparkles[i].update();
+                if (sparkles[i].alpha <= 0) sparkles.splice(i, 1);
+            }
+
+            // Draw shapes and sparkles on top
+            for (let s of shapes) {
+                s.draw(ctx);
+            }
+            for (let sp of sparkles) {
+                sp.draw(ctx);
+            }
+        }
+
+        initPianoWave();
+        initPiano();
+        startShapes();
+        setupCanvas();
+        animate();
+
+        // Call setupCanvas immediately and on resize
+        setupCanvas();
+        window.addEventListener('resize', () => {
+            setupCanvas();
+            initPiano(); // Reinitialize piano keys when canvas size changes
+        });
+
+        // Fix tooltip handling
+        document.querySelectorAll('.has-tooltip').forEach(element => {
+            // Check if the element itself has a data-tooltip or contains an element with data-tooltip
+            const tooltipElement = element.getAttribute('data-tooltip') ? element : element.querySelector('[data-tooltip]');
+
+            if (tooltipElement && tooltipElement.dataset.tooltip) {
+                const tooltip = document.createElement('div');
+                tooltip.className = 'tooltip';
+                tooltip.textContent = tooltipElement.dataset.tooltip;
+                document.body.appendChild(tooltip);
+
+                let tooltipTimer;
+
+                element.addEventListener('mouseenter', () => {
+                    clearTimeout(tooltipTimer);
+                    tooltipTimer = setTimeout(() => {
+                        const rect = element.getBoundingClientRect();
+                        tooltip.style.left = `${rect.left + (rect.width / 2) - (tooltip.offsetWidth / 2)}px`;
+                        tooltip.style.top = `${rect.bottom + 10}px`;
+                        tooltip.classList.add('show');
+                    }, 500);
+                });
+
+                element.addEventListener('mouseleave', () => {
+                    clearTimeout(tooltipTimer);
+                    tooltip.classList.remove('show');
+                });
+            }
+        });
+
+        // Add randomize functionality
+        const randomizeBtn = document.getElementById('randomizeBtn');
+        randomizeBtn.addEventListener('click', () => {
+            // Randomize synth
+            const synthOptions = Array.from(synthSelect.options);
+            const randomSynth = synthOptions[Math.floor(Math.random() * synthOptions.length)];
+            synthSelect.value = randomSynth.value;
+            synthSelect.dispatchEvent(new Event('change'));
+
+            // Randomize parameters (except volume)
+            const controlsToRandomize = [
+                'reverbMix', 'octaveShift', 'filterCutoff', 'attack', 'decay',
+                'resonance', 'detune', 'lfoRate', 'lfoDepth'
+            ];
+
+            controlsToRandomize.forEach(controlId => {
+                const control = document.getElementById(controlId);
+                const min = parseFloat(control.min);
+                const max = parseFloat(control.max);
+                const randomValue = min + Math.random() * (max - min);
+                control.value = randomValue;
+                control.dispatchEvent(new Event('input'));
+            });
+        });
+
+        // Visual configuration handling
+        document.getElementById('bgColor').addEventListener('input', (e) => {
+            visualConfig.bgColor = e.target.value;
+            document.body.style.background = `linear-gradient(135deg, ${e.target.value} 0%, ${adjustColor(e.target.value, -20)} 100%)`;
+            e.target.nextElementSibling.style.background = e.target.value;
+        });
+
+        document.getElementById('shapeColor').addEventListener('change', (e) => {
+            visualConfig.shapeColorMode = e.target.value;
+        });
+
+        document.getElementById('particleCount').addEventListener('input', (e) => {
+            visualConfig.particleCount = parseInt(e.target.value);
+            e.target.nextElementSibling.textContent = e.target.value;
+        });
+
+        document.getElementById('bounceIntensity').addEventListener('input', (e) => {
+            visualConfig.bounceIntensity = parseFloat(e.target.value);
+            e.target.nextElementSibling.textContent = e.target.value;
+        });
+
+        document.getElementById('trailEffect').addEventListener('change', (e) => {
+            visualConfig.trailEffect = e.target.checked;
+        });
+
+        document.getElementById('trailLength').addEventListener('input', (e) => {
+            visualConfig.trailLength = parseFloat(e.target.value);
+            e.target.nextElementSibling.textContent = e.target.value;
+        });
+
+        document.getElementById('glowIntensity').addEventListener('input', (e) => {
+            visualConfig.glowIntensity = parseInt(e.target.value);
+            e.target.nextElementSibling.textContent = e.target.value;
+        });
+
+        document.getElementById('rotationSpeed').addEventListener('input', (e) => {
+            visualConfig.rotationSpeed = parseFloat(e.target.value);
+            e.target.nextElementSibling.textContent = e.target.value;
+        });
+
+        document.getElementById('pulseEffect').addEventListener('change', (e) => {
+            visualConfig.pulseEffect = e.target.checked;
+        });
+
+        document.getElementById('shapeMorph').addEventListener('change', (e) => {
+            visualConfig.shapeMorph = e.target.checked;
+        });
+
+        document.getElementById('rainbowMode').addEventListener('change', (e) => {
+            visualConfig.rainbowMode = e.target.checked;
+        });
+
+        document.getElementById('particleSize').addEventListener('input', (e) => {
+            visualConfig.particleSize = parseFloat(e.target.value);
+            e.target.nextElementSibling.textContent = e.target.value;
+        });
+
+        document.getElementById('explosionEffect').addEventListener('change', (e) => {
+            visualConfig.explosionEffect = e.target.checked;
+        });
+
+        document.getElementById('gravitationalPull').addEventListener('change', (e) => {
+            visualConfig.gravitationalPull = e.target.checked;
+        });
+
+        document.getElementById('colorCycleSpeed').addEventListener('input', (e) => {
+            visualConfig.colorCycleSpeed = parseFloat(e.target.value);
+            e.target.nextElementSibling.textContent = e.target.value;
+        });
+
+        document.getElementById('particleInteraction').addEventListener('change', (e) => {
+            visualConfig.particleInteraction = e.target.checked;
+        });
+
+        document.getElementById('particleOpacity').addEventListener('input', (e) => {
+            visualConfig.particleOpacity = parseFloat(e.target.value);
+            e.target.nextElementSibling.textContent = e.target.value;
+        });
+
+        function adjustColor(color, amount) {
+            const hex = color.replace('#', '');
+            const num = parseInt(hex, 16);
+            const r = Math.min(255, Math.max(0, (num >> 16) + amount));
+            const g = Math.min(255, Math.max(0, ((num >> 8) & 0x00FF) + amount));
+            const b = Math.min(255, Math.max(0, (num & 0x0000FF) + amount));
+            return '#' + (g | (b << 8) | (r << 16)).toString(16).padStart(6, '0');
+        }
+
+        function hexToRgb(hex) {
+            const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+            return result ? [
+                parseInt(result[1], 16),
+                parseInt(result[2], 16),
+                parseInt(result[3], 16)
+            ] : [0, 0, 0];
+        }
+
+        // Initialize color preview
+        document.querySelector('#bgColor').nextElementSibling.style.background = visualConfig.bgColor;
+    </script>
+</body>
+
+</html>
